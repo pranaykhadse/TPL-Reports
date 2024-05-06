@@ -10,45 +10,25 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import StarBorder from "@mui/icons-material/StarBorder";
 import AddIcon from '@mui/icons-material/Add';
 
+import TableData from "../TableData";
+
 const TableList = ({openTab, allOpenTabs}) => {
   const [open, setOpen] = React.useState(false);
   const [selected, setSelected] = React.useState([]);
 
   const handleClick = (e) => {
-    if (!selected.includes(e)) {
-      setSelected([
-        ...selected,
-        e,
-      ]);
-    } else {
-      let arr = selected;
-      arr.splice(selected.indexOf(e) , 1);
-      setSelected([...arr]);
+    if (allOpenTabs.length === 0) {
+      if (!selected.includes(e)) {
+        setSelected([
+          e
+        ]);
+      }else{
+        setSelected([]);
+      }
     }
+   
   };
   
-  const data = [
-    {
-      title: "User",
-      fields: [
-        "username",
-        "email",
-        "status",
-        "lms_status",
-        "course_status",
-        "is_deleted",
-        "primary_group",
-      ],
-    },
-    {
-      title: "Groups",
-      fields: ["Name", "is_group"],
-    },
-    {
-      title: "Courses",
-      fields: ["name", "amount"],
-    },
-  ];
 
   return (
     <List
@@ -61,7 +41,7 @@ const TableList = ({openTab, allOpenTabs}) => {
       component="nav"
       aria-labelledby="nested-list-subheader"
     >
-      {data.map((table, i) => (
+      {TableData.map((table, i) => (
         <Box key={i}>
           <ListItemButton
             onClick={() => handleClick(table.title)}

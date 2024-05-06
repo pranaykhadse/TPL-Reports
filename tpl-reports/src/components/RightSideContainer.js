@@ -23,12 +23,14 @@ const RightSideContainer = ({ allOpenTabs, setAllOpenTAbs }) => {
 
   const handleDragEnd = (results) => {
     let tempuser = [...allOpenTabs];
-    let [selectedRow] = tempuser.splice(results.source.index, 1);
-    tempuser.splice(results.destination.index, 0, selectedRow);
+    if (results.destination) {
+      let [selectedRow] = tempuser.splice(results.source.index, 1);
+      tempuser.splice(results.destination.index, 0, selectedRow);
+    }
     setAllOpenTAbs(tempuser);
   };
 
-  const listData = ["Alicia", "Roma", "Clara", "Rio"];
+  const listData = ["Alicia", "Roma", "Clara", "Rio", "Rio", "Rio", "Rio", "Rio", "Rio", "Rio", "Rio"];
 
   return (
     <DragDropContext onDragEnd={(results) => handleDragEnd(results)}>
@@ -54,7 +56,7 @@ const RightSideContainer = ({ allOpenTabs, setAllOpenTAbs }) => {
                     sx={{
                       borderRadius: 1,
                       border: "1px solid grey",
-                      height: "auto",
+                      height: "fit-content",
                     }}
                     ref={provided.innerRef}
                     {...provided.draggableProps}
@@ -133,7 +135,7 @@ const RightSideContainer = ({ allOpenTabs, setAllOpenTAbs }) => {
                     <Box>
                       <List>
                         {listData.map((item, i) => (
-                          <ListItem sx={{ width: '100%',bgcolor: i/2 !==1 && i != 0?'gray':"" }}>
+                          <ListItem sx={{ width: '100%',bgcolor: i%2 !==0 ?'gray':"" }} key={i}>
                             <ListItemText primary={item} />
                           </ListItem>
                         ))}
