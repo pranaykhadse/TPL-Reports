@@ -10,7 +10,6 @@ const LeftSideBar = (props) => {
 
   return (
     <Box
-          height={230}
           width={260}
           display="flex"
           alignItems="center"
@@ -19,6 +18,7 @@ const LeftSideBar = (props) => {
           noValidate
           autoComplete="off"
           minWidth={260}
+          sx={{ height: "100%",overflowX: "auto", }}
         >
           <TextField
               id="outlined-basic"

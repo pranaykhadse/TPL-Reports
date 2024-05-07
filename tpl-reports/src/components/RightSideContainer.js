@@ -11,11 +11,11 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 
-const RightSideContainer = ({ allOpenTabs, setAllOpenTAbs }) => {
-  const closeTab = (title, el) => {
+const RightSideContainer = ({ allOpenTabs, setAllOpenTAbs, openTabData }) => {
+  const closeTab = (title, type) => {
     let arr = allOpenTabs;
     arr.splice(
-      allOpenTabs.findIndex((a) => a.title === title && a.element === el),
+      allOpenTabs.findIndex((a) => a.table_name === title && a.type === type),
       1
     );
     setAllOpenTAbs([...arr]);
@@ -30,7 +30,6 @@ const RightSideContainer = ({ allOpenTabs, setAllOpenTAbs }) => {
     setAllOpenTAbs(tempuser);
   };
 
-  const listData = ["Alicia", "Roma", "Clara", "Rio", "Rio", "Rio", "Rio", "Rio", "Rio", "Rio", "Rio"];
 
   return (
     <DragDropContext onDragEnd={(results) => handleDragEnd(results)}>
@@ -41,12 +40,12 @@ const RightSideContainer = ({ allOpenTabs, setAllOpenTAbs }) => {
             gap={0}
             px={0.5}
             flexDirection="row"
-            sx={{ flexGrow: 1, height: "100%", overflowY: "auto" }}
+            sx={{ flexGrow: 1, height: "100%", overflowX: "auto", }}
             ref={provided.innerRef}
             {...provided.droppableProps}
           >
             {allOpenTabs.map((tab, i) => (
-              <Draggable draggableId={tab.element} index={i} key={tab.element}>
+              <Draggable draggableId={tab.type} index={i} key={tab.type}>
                 {(provided) => (
                   <Box
                     width="auto"
@@ -91,14 +90,14 @@ const RightSideContainer = ({ allOpenTabs, setAllOpenTAbs }) => {
                             color: "gray",
                           }}
                         >
-                          {tab.title} : {tab.element}
+                          {tab.table_name} : {tab.type}
                         </Typography>
 
                         <CloseIcon
                           sx={{
                             cursor: "pointer",
                           }}
-                          onClick={() => closeTab(tab.title, tab.element)}
+                          onClick={() => closeTab(tab.table_name, tab.type)}
                         />
                       </Box>
                       <Box
@@ -134,9 +133,9 @@ const RightSideContainer = ({ allOpenTabs, setAllOpenTAbs }) => {
                     </Box>
                     <Box>
                       <List>
-                        {listData.map((item, i) => (
+                        {openTabData.map((item, i) => (
                           <ListItem sx={{ width: '100%',bgcolor: i%2 !==0 ?'gray':"" }} key={i}>
-                            <ListItemText primary={item} />
+                            <ListItemText primary={item[tab.type]} />
                           </ListItem>
                         ))}
                       </List>

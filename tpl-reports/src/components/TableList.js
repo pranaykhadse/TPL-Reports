@@ -33,10 +33,12 @@ const TableList = ({openTab, allOpenTabs}) => {
   return (
     <List
       sx={{
+        height: "fit-content", 
         width: "100%",
         maxWidth: 360,
         bgcolor: "background.paper",
         fontWeight: "bold",
+       paddingBottom: "10px"
       }}
       component="nav"
       aria-labelledby="nested-list-subheader"
@@ -64,9 +66,9 @@ const TableList = ({openTab, allOpenTabs}) => {
             {selected.includes(table.title) ? <ExpandLess /> : <ExpandMore />}
           </ListItemButton>
           <Collapse in={selected.includes(table.title)} timeout="auto" unmountOnExit>
-            {table.fields.map((el,i) => (
+            {table.fields.map((type,i) => (
                 <List
-                key={el}
+                key={type}
                 component="div"
                 disablePadding
                 sx={{
@@ -75,9 +77,9 @@ const TableList = ({openTab, allOpenTabs}) => {
                   borderRadius: 1,
                 }}
               >
-                <ListItemButton  onClick={() => openTab(el, table.title)}>
-                  <ListItemText primary={el} />
-                  {allOpenTabs.filter(e => e.element === el).length > 0 ? <RemoveIcon
+                <ListItemButton  onClick={() => openTab(type, table.table_name)}>
+                  <ListItemText primary={type} />
+                  {allOpenTabs.filter(e => e.type === type).length > 0 ? <RemoveIcon
                     sx={{
                       height: "25px",
                     }}

@@ -1,6 +1,7 @@
 const TableData = [
   {
     title: "User",
+    table_name: "tbl_user",
     fields: [
       "username",
       "email",
@@ -16,10 +17,12 @@ const TableData = [
   },
   {
     title: "Groups",
+    table_name: "tbl_groups",
     fields: ["name", "is_group", "total_courses", "total_users"],
   },
   {
     title: "Courses",
+    table_name: "tbl_courses",
     fields: [
       "name",
       "amount",
