@@ -11,6 +11,8 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 
+
+
 const RightSideContainer = ({ allOpenTabs, setAllOpenTAbs, openTabData }) => {
   const closeTab = (title, type) => {
     let arr = allOpenTabs;
@@ -33,6 +35,7 @@ const RightSideContainer = ({ allOpenTabs, setAllOpenTAbs, openTabData }) => {
 
   return (
     <DragDropContext onDragEnd={(results) => handleDragEnd(results)}>
+      
       <Droppable droppableId="Box-1" direction="horizontal">
         {(provided) => (
           <Box
@@ -49,7 +52,7 @@ const RightSideContainer = ({ allOpenTabs, setAllOpenTAbs, openTabData }) => {
                 {(provided) => (
                   <Box
                     width="auto"
-                    minWidth={220}
+                    minWidth="fit-content"
                     display="flex"
                     flexDirection="column"
                     sx={{
@@ -148,6 +151,8 @@ const RightSideContainer = ({ allOpenTabs, setAllOpenTAbs, openTabData }) => {
           </Box>
         )}
       </Droppable>
+     
+ 
     </DragDropContext>
   );
 };

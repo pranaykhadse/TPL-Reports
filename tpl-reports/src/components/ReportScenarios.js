@@ -4,9 +4,15 @@ import LeftSideBar from "./LeftSideBar";
 import RightSideContainer from "./RightSideContainer";
 import axios from "axios";
 
+import Pagination from "@mui/material/Pagination";
+import Stack from "@mui/material/Stack";
+
 const ReportScenarios = () => {
   const [allOpenTabs, setAllOpenTAbs] = useState([]);
   const [openTabData, setOpenTabData] = useState([]);
+  const [responseData, setResponseData] = useState([]);
+  const [page, setPage] = useState(1);
+
   const handleRightTab = (type, title) => {
     if (allOpenTabs.filter((e) => e.type === type).length === 0) {
       setAllOpenTAbs([
@@ -24,13 +30,12 @@ const ReportScenarios = () => {
     }
   };
 
-  console.log(allOpenTabs);
   const fetchData = async () => {
     if (allOpenTabs.length > 0) {
       const data = JSON.stringify(allOpenTabs);
       axios
         .post(
-          `https://staging.trainingpipeline.com/backend/web/report-generate/generate`,
+          `https://staging.trainingpipeline.com/backend/web/report-generate/generate?per-page=15&page=${page}`,
           { data },
           {
             headers: {
@@ -41,6 +46,7 @@ const ReportScenarios = () => {
         .then(
           (res) => {
             setOpenTabData(res.data.payload);
+            setResponseData(res.data)
           },
           (error) => {
             console.log(error);
@@ -50,16 +56,27 @@ const ReportScenarios = () => {
   };
   useEffect(() => {
     fetchData();
-  }, [allOpenTabs]);
+  }, [allOpenTabs, page]);
+
+  const handleChangePage = ( event,value) => {
+setPage(value);
+  }
 
   return (
-    <>
+    <Box
+      display="flex"
+      flexDirection="column"
+      sx={{
+        justifyContent: "center",
+      }}
+    >
       <Box
         height={650}
         display="flex"
         flexDirection="row"
         gap={0}
-        my={4}
+        mt={4}
+        mb={2}
         mx={8}
         sx={{
           justifyContent: "flex-start",
@@ -73,7 +90,15 @@ const ReportScenarios = () => {
           openTabData={openTabData}
         />
       </Box>
-    </>
+      <Box
+      display="flex"
+      sx={{
+        justifyContent: "center",
+      }}>
+
+      <Pagination count={responseData.pages} variant="outlined" shape="rounded"  onChange={handleChangePage}/>
+      </Box>
+    </Box>
   );
 };
 
