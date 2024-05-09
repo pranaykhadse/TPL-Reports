@@ -1,4 +1,4 @@
-import ReportScenarios from "./components/ReportScenarios";
+import ReportScenarios from "./components/MainContainer/ReportScenarios";
 
 
 function App() {

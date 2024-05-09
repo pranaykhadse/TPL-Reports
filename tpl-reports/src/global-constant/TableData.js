@@ -17,12 +17,12 @@ const TableData = [
   },
   {
     title: "Groups",
-    table_name: "tbl_groups",
+    table_name: "tbl_group",
     fields: ["name", "is_group", "total_courses", "total_users"],
   },
   {
     title: "Courses",
-    table_name: "tbl_courses",
+    table_name: "tbl_course",
     fields: [
       "name",
       "amount",

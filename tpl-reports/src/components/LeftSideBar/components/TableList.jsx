@@ -10,7 +10,7 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import StarBorder from "@mui/icons-material/StarBorder";
 import AddIcon from '@mui/icons-material/Add';
 
-import TableData from "../TableData";
+import TableData from "../../../global-constant/TableData"
 
 const TableList = ({openTab, allOpenTabs}) => {
   const [open, setOpen] = React.useState(false);
@@ -49,7 +49,7 @@ const TableList = ({openTab, allOpenTabs}) => {
             onClick={() => handleClick(table.title)}
             sx={ {
                     border: "1px solid grey",
-                    bgcolor: "#a8f3d2",
+                    bgcolor: "#c6f9f1",
                     borderRadius: 1,
                     '&:hover': {
                         bgcolor: "#a8f3d2",

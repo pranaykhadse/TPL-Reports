@@ -2,9 +2,8 @@ import React from 'react'
 import Box from "@mui/material/Box";
 
 
-
-import TextField from "@mui/material/TextField";
-import TableList from './TableList';
+import TableList from './components/TableList';
+import SearchTableInput from './components/SearchTableInput';
 
 const LeftSideBar = (props) => {
 
@@ -20,14 +19,10 @@ const LeftSideBar = (props) => {
           minWidth={260}
           sx={{ height: "100%",overflowX: "auto", }}
         >
-          <TextField
-              id="outlined-basic"
-              placeholder="Search Tables/Column"
-              variant="outlined"
-              sx={{ width: "100%" }}
-            />
-
+          
+          <SearchTableInput />
           <TableList openTab={props.openTab} allOpenTabs={props.allOpenTabs}/>
+          
         </Box>
   )
 }
