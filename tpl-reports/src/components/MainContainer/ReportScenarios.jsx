@@ -11,22 +11,29 @@ import MainHead from "./components/MainHead";
 
 const ReportScenarios = () => {
   const [allOpenTabs, setAllOpenTAbs] = useState([]);
+  const [allOpenTabs2, setAllOpenTAbs2] = useState([]);
   const [openTabData, setOpenTabData] = useState([]);
   const [responseData, setResponseData] = useState([]);
   const [page, setPage] = useState(1);
   const [startDate, setStartDate] = useState(null);
   const [end_date, setEnd_date] = useState(null);
 
-  
-  const handleRightTab = (type, title) => {
+  const handleRightTab = (type, title, showType, name) => {
+
     let custom_column;
-    if (type == "all_course_enrolled" || type == "completed_courses" || type=="registered_courses" || type=="total_courses"|| type=="total_users") {
+    if (
+      type == "all_course_enrolled" ||
+      type == "completed_courses" ||
+      type == "registered_courses" ||
+      type == "total_courses" ||
+      type == "total_users"
+    ) {
       custom_column = true;
-    }else{
+    } else {
       custom_column = false;
     }
-
     if (allOpenTabs.filter((e) => e.type === type).length === 0) {
+      
       setAllOpenTAbs([
         ...allOpenTabs,
         {
@@ -37,6 +44,24 @@ const ReportScenarios = () => {
           placeholder: "",
           custom_column: custom_column,
           table_name: title,
+        },
+      ]);
+      setAllOpenTAbs2([
+        ...allOpenTabs2,
+        {
+          data: {
+            required: false,
+            type: type,
+            className: "form-control",
+            label: "",
+            placeholder: "",
+            custom_column: custom_column,
+            table_name: title,
+          },
+          show_type: {
+            showType: showType,
+            name:name,
+          },
         },
       ]);
     }
@@ -96,11 +121,9 @@ const ReportScenarios = () => {
     }
   };
 
-
   useEffect(() => {
     fetchData();
   }, [allOpenTabs, page, end_date]);
-
 
   const handleChangePage = (event, value) => {
     setPage(value);
@@ -129,10 +152,12 @@ const ReportScenarios = () => {
           maxHeight: "fit-content",
         }}
       >
-        <LeftSideBar openTab={handleRightTab} allOpenTabs={allOpenTabs} />
+        <LeftSideBar openTab={handleRightTab} allOpenTabs2={allOpenTabs2} />
         <RightSideContainer
           allOpenTabs={allOpenTabs}
           setAllOpenTAbs={setAllOpenTAbs}
+          allOpenTabs2={allOpenTabs2}
+          setAllOpenTAbs2={setAllOpenTAbs2}
           openTabData={openTabData}
         />
       </Box>

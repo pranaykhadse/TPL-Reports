@@ -21,7 +21,7 @@ const LeftSideBar = (props) => {
         >
           
           <SearchTableInput />
-          <TableList openTab={props.openTab} allOpenTabs={props.allOpenTabs}/>
+          <TableList openTab={props.openTab} allOpenTabs={props.allOpenTabs2}/>
           
         </Box>
   )

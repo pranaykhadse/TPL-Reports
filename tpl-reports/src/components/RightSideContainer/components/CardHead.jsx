@@ -6,6 +6,7 @@ import { TextField, Typography } from "@mui/material";
 import ModeIcon from "@mui/icons-material/Mode";
 
 const CardHead = ({tab, closeTab}) => {
+
   return (
     <Box
       height={145}
@@ -36,14 +37,14 @@ const CardHead = ({tab, closeTab}) => {
             color: "gray",
           }}
         >
-          {tab.table_name} : {tab.type}
+          {tab.show_type.name} : {tab.show_type.showType}
         </Typography>
 
         <CloseIcon
           sx={{
             cursor: "pointer",
           }}
-          onClick={() => closeTab(tab.table_name, tab.type)}
+          onClick={() => closeTab(tab.data.table_name, tab.data.type)}
         />
       </Box>
       <Box
@@ -56,7 +57,7 @@ const CardHead = ({tab, closeTab}) => {
         }}
       >
         <Typography variant="p" component="p" pr={1}>
-          {tab.type}
+          {tab.show_type.showType}
         </Typography>
         <ModeIcon
           sx={{

@@ -15,7 +15,7 @@ const ListBody = ({openTabData, tab}) => {
               sx={{ width: "100%", bgcolor: i % 2 !== 0 ? "#cfd1d3" : "" }}
               key={i}
             >
-              <ListItemText primary={item[tab.type]} />
+              <ListItemText primary={item[tab.data.type]} />
             </ListItem>
           ))}
         </List>

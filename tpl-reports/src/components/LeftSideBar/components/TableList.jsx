@@ -68,7 +68,7 @@ const TableList = ({openTab, allOpenTabs}) => {
           <Collapse in={selected.includes(table.title)} timeout="auto" unmountOnExit>
             {table.fields.map((type,i) => (
                 <List
-                key={type}
+                key={type[1]}
                 component="div"
                 disablePadding
                 sx={{
@@ -77,9 +77,10 @@ const TableList = ({openTab, allOpenTabs}) => {
                   borderRadius: 1,
                 }}
               >
-                <ListItemButton  onClick={() => openTab(type, table.table_name)}>
-                  <ListItemText primary={type} />
-                  {allOpenTabs.filter(e => e.type === type).length > 0 ? <RemoveIcon
+             
+                <ListItemButton  onClick={() => openTab(type[0], table.table_name, type[1],table.title)}>
+                  <ListItemText primary={type[1]} />
+                  {allOpenTabs.filter(e => e.data.type === type[0]).length > 0 ? <RemoveIcon
                     sx={{
                       height: "25px",
                     }}

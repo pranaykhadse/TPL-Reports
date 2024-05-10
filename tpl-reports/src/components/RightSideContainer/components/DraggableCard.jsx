@@ -7,6 +7,7 @@ import CardHead from "./CardHead";
 import ListBody from "./ListBody";
 
 const DraggableCard = ({ provided, tab, openTabData, closeTab }) => {
+
   return (
     <Box
       width="auto"
