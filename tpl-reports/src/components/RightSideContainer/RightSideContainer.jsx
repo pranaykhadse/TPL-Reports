@@ -4,8 +4,17 @@ import Box from "@mui/material/Box";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 import DraggableCard from "./components/DraggableCard";
+import DropableArea from "./components/DropableArea";
 
-const RightSideContainer = ({ allOpenTabs2, setAllOpenTAbs2, openTabData,allOpenTabs,setAllOpenTAbs }) => {
+const RightSideContainer = ({
+  allOpenTabs2,
+  setAllOpenTAbs2,
+  openTabData,
+  allOpenTabs,
+  setAllOpenTAbs,
+  handleDropStatus,
+  onDrop,
+}) => {
   const closeTab = (title, type) => {
     let arr = allOpenTabs;
     arr.splice(
@@ -16,7 +25,9 @@ const RightSideContainer = ({ allOpenTabs2, setAllOpenTAbs2, openTabData,allOpen
 
     let arr2 = allOpenTabs2;
     arr2.splice(
-      allOpenTabs2.findIndex((a) => a.data.table_name === title && a.data.type === type),
+      allOpenTabs2.findIndex(
+        (a) => a.data.table_name === title && a.data.type === type
+      ),
       1
     );
     setAllOpenTAbs2([...arr2]);
@@ -31,7 +42,6 @@ const RightSideContainer = ({ allOpenTabs2, setAllOpenTAbs2, openTabData,allOpen
     setAllOpenTAbs2(tempuser);
   };
 
-
   return (
     <DragDropContext onDragEnd={(results) => handleDragEnd(results)}>
       <Droppable droppableId="Box-1" direction="horizontal">
@@ -45,24 +55,28 @@ const RightSideContainer = ({ allOpenTabs2, setAllOpenTAbs2, openTabData,allOpen
             ref={provided.innerRef}
             {...provided.droppableProps}
           >
+            <DropableArea onDrop={() => onDrop(0)} handleDropStatus={handleDropStatus}/> 
             {allOpenTabs2.map((tab, i) => (
               <Draggable
                 draggableId={tab.data.type}
                 index={i}
                 key={tab.data.type}
               >
-               
                 {(provided) => (
+                  <React.Fragment>
                   <DraggableCard
                     provided={provided}
                     tab={tab}
                     openTabData={openTabData}
                     closeTab={closeTab}
                   />
+                   <DropableArea onDrop={() => onDrop(i + 1)} handleDropStatus={handleDropStatus} /> 
+                  </React.Fragment>
                 )}
               </Draggable>
             ))}
             {provided.placeholder}
+            <DropableArea onDrop={() => onDrop("end")} handleDropStatus={handleDropStatus} flexGrow={1}/> 
           </Box>
         )}
       </Droppable>

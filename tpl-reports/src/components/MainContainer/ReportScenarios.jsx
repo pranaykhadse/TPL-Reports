@@ -17,9 +17,85 @@ const ReportScenarios = () => {
   const [page, setPage] = useState(1);
   const [startDate, setStartDate] = useState(null);
   const [end_date, setEnd_date] = useState(null);
+  const [type, setType] = useState("");
+  const [title, settitle] = useState("");
+  const [dropStatus, setDropStatus] = useState();
+  const [mainType, setMainType] = useState("");
+  const [mainTitle, setMainTitle] = useState("");
+
+  const handleDragStart = (type, title, show_type, mainTitle) => {
+    setType(type);
+    settitle(title);
+    setMainType(show_type);
+    setMainTitle(mainTitle);
+  };
+
+  const handleDropStatus = (e) => {
+    setDropStatus(e);
+  };
+
+  const handleDrop = (position) => {
+    if (position == "end") {
+      setTimeout(() => {
+        handleRightTab(type, title, mainType, mainTitle);
+      }, 500);
+    } else {
+      setTimeout(() => {
+        handleDragDrop(position, type, title, mainType, mainTitle);
+      }, 500);
+    }
+  };
+  const handleDragDrop = (position, type, title, mainType, mainTitle) => {
+    if (dropStatus) {
+      let custom_column;
+      if (
+        type == "all_course_enrolled" ||
+        type == "completed_courses" ||
+        type == "registered_courses" ||
+        type == "total_courses" ||
+        type == "total_users"
+      ) {
+        custom_column = true;
+      } else {
+        custom_column = false;
+      }
+
+      if (allOpenTabs.filter((e) => e.type === type).length === 0) {
+        let tabArray2 = allOpenTabs2;
+        tabArray2.splice(position, 0, {
+          data: {
+            required: false,
+            type: type,
+            className: "form-control",
+            label: "",
+            placeholder: "",
+            custom_column: custom_column,
+            table_name: title,
+          },
+          show_type: {
+            showType: mainType,
+            name: mainTitle,
+          },
+        });
+        setAllOpenTAbs2([...tabArray2]);
+
+        let tabArray = allOpenTabs;
+        tabArray.splice(position, 0, {
+          required: false,
+          type: type,
+          className: "form-control",
+          label: "",
+          placeholder: "",
+          custom_column: custom_column,
+          table_name: title,
+        });
+
+        setAllOpenTAbs([...tabArray]);
+      }
+    }
+  };
 
   const handleRightTab = (type, title, showType, name) => {
-
     let custom_column;
     if (
       type == "all_course_enrolled" ||
@@ -33,7 +109,6 @@ const ReportScenarios = () => {
       custom_column = false;
     }
     if (allOpenTabs.filter((e) => e.type === type).length === 0) {
-      
       setAllOpenTAbs([
         ...allOpenTabs,
         {
@@ -60,7 +135,7 @@ const ReportScenarios = () => {
           },
           show_type: {
             showType: showType,
-            name:name,
+            name: name,
           },
         },
       ]);
@@ -152,13 +227,20 @@ const ReportScenarios = () => {
           maxHeight: "fit-content",
         }}
       >
-        <LeftSideBar openTab={handleRightTab} allOpenTabs2={allOpenTabs2} />
+        <LeftSideBar
+          openTab={handleRightTab}
+          allOpenTabs2={allOpenTabs2}
+          dragStart={handleDragStart}
+        />
         <RightSideContainer
           allOpenTabs={allOpenTabs}
           setAllOpenTAbs={setAllOpenTAbs}
           allOpenTabs2={allOpenTabs2}
           setAllOpenTAbs2={setAllOpenTAbs2}
           openTabData={openTabData}
+          handleDropStatus={handleDropStatus}
+          dropStatus={dropStatus}
+          onDrop={handleDrop}
         />
       </Box>
       <Box

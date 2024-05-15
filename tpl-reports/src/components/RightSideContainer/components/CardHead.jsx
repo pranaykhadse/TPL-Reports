@@ -6,7 +6,7 @@ import { TextField, Typography } from "@mui/material";
 import ModeIcon from "@mui/icons-material/Mode";
 
 const CardHead = ({tab, closeTab}) => {
-
+console.log("vjfdv",tab);
   return (
     <Box
       height={145}
