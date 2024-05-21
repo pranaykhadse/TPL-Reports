@@ -5,9 +5,11 @@ import axios from "axios";
 import Pagination from "@mui/material/Pagination";
 
 import LeftSideBar from "../LeftSideBar/LeftSideBar";
-import RightSideContainer from "../RightSideContainer/RightSideContainer";
+import RightSideContainer from "../../components/RightSideContainer/RightSideContainer";
 
 import MainHead from "./components/MainHead";
+import ReportNavBar from "./components/ReportNavBar/ReportNavBar";
+import { SaveReports } from "../../global-constant/SaveReport";
 
 const ReportScenarios = () => {
   const [allOpenTabs, setAllOpenTAbs] = useState([]);
@@ -22,6 +24,13 @@ const ReportScenarios = () => {
   const [dropStatus, setDropStatus] = useState();
   const [mainType, setMainType] = useState("");
   const [mainTitle, setMainTitle] = useState("");
+
+  const handleSavedReport = (e) => {
+    setAllOpenTAbs([]);
+    setAllOpenTAbs2([]);
+    setAllOpenTAbs2(e.table_data);
+    setOpenTabData(e.fields_json);
+  };
 
   const handleDragStart = (type, title, show_type, mainTitle) => {
     setType(type);
@@ -59,8 +68,62 @@ const ReportScenarios = () => {
       } else {
         custom_column = false;
       }
+      if (allOpenTabs2.length > 0 && allOpenTabs.length === 0) {
+        let arrList = allOpenTabs2;
+        let arrList2 = [];
+        arrList.map((item, i) => {
+          arrList2.push(item.data);
+        });
+        if (allOpenTabs.filter((e) => e.type === type).length === 0) {
+          setAllOpenTAbs(() => {
+            const newElement = [...arrList2];
+            newElement.splice(position, 0, {
+              required: false,
+              type: type,
+              className: "form-control",
+              label: "",
+              placeholder: "",
+              custom_column: custom_column,
+              table_name: title,
+            });
+            return newElement;
+          });
+          setAllOpenTAbs2((prev) => {
+            const newElement = [...prev];
+            newElement.splice(position, 0, {
+              data: {
+                required: false,
+                type: type,
+                className: "form-control",
+                label: "",
+                placeholder: "",
+                custom_column: custom_column,
+                table_name: title,
+              },
+              show_type: {
+                showType: mainType,
+                name: mainTitle,
+              },
+            });
+            return newElement;
+          });
+        }
+      } else {
+        if (allOpenTabs.filter((e) => e.type === type).length === 0) {
+          let tabArray = allOpenTabs;
+          tabArray.splice(position, 0, {
+            required: false,
+            type: type,
+            className: "form-control",
+            label: "",
+            placeholder: "",
+            custom_column: custom_column,
+            table_name: title,
+          });
 
-      if (allOpenTabs.filter((e) => e.type === type).length === 0) {
+          setAllOpenTAbs([...tabArray]);
+        }
+
         let tabArray2 = allOpenTabs2;
         tabArray2.splice(position, 0, {
           data: {
@@ -78,19 +141,6 @@ const ReportScenarios = () => {
           },
         });
         setAllOpenTAbs2([...tabArray2]);
-
-        let tabArray = allOpenTabs;
-        tabArray.splice(position, 0, {
-          required: false,
-          type: type,
-          className: "form-control",
-          label: "",
-          placeholder: "",
-          custom_column: custom_column,
-          table_name: title,
-        });
-
-        setAllOpenTAbs([...tabArray]);
       }
     }
   };
@@ -108,23 +158,17 @@ const ReportScenarios = () => {
     } else {
       custom_column = false;
     }
-    if (allOpenTabs.filter((e) => e.type === type).length === 0) {
-      setAllOpenTAbs([
-        ...allOpenTabs,
-        {
-          required: false,
-          type: type,
-          className: "form-control",
-          label: "",
-          placeholder: "",
-          custom_column: custom_column,
-          table_name: title,
-        },
-      ]);
-      setAllOpenTAbs2([
-        ...allOpenTabs2,
-        {
-          data: {
+    if (allOpenTabs2.length > 0 && allOpenTabs.length === 0) {
+      let arrList = allOpenTabs2;
+      let arrList2 = [];
+      arrList.map((item, i) => {
+        arrList2.push(item.data);
+      });
+
+      if (allOpenTabs.filter((e) => e.type === type).length === 0) {
+        setAllOpenTAbs([
+          ...arrList2,
+          {
             required: false,
             type: type,
             className: "form-control",
@@ -133,14 +177,62 @@ const ReportScenarios = () => {
             custom_column: custom_column,
             table_name: title,
           },
-          show_type: {
-            showType: showType,
-            name: name,
+        ]);
+        setAllOpenTAbs2([
+          ...allOpenTabs2,
+          {
+            data: {
+              required: false,
+              type: type,
+              className: "form-control",
+              label: "",
+              placeholder: "",
+              custom_column: custom_column,
+              table_name: title,
+            },
+            show_type: {
+              showType: showType,
+              name: name,
+            },
           },
-        },
-      ]);
+        ]);
+      }
+    } else {
+      if (allOpenTabs.filter((e) => e.type === type).length === 0) {
+        setAllOpenTAbs([
+          ...allOpenTabs,
+          {
+            required: false,
+            type: type,
+            className: "form-control",
+            label: "",
+            placeholder: "",
+            custom_column: custom_column,
+            table_name: title,
+          },
+        ]);
+        setAllOpenTAbs2([
+          ...allOpenTabs2,
+          {
+            data: {
+              required: false,
+              type: type,
+              className: "form-control",
+              label: "",
+              placeholder: "",
+              custom_column: custom_column,
+              table_name: title,
+            },
+            show_type: {
+              showType: showType,
+              name: name,
+            },
+          },
+        ]);
+      }
     }
   };
+
   const fetchData = async () => {
     if (allOpenTabs.length > 0) {
       if (startDate && end_date) {
@@ -208,12 +300,17 @@ const ReportScenarios = () => {
     <Box
       display="flex"
       flexDirection="column"
-      my={4}
+      my={1}
       sx={{
         justifyContent: "center",
       }}
     >
-      <MainHead setStartDate={setStartDate} setEnd_date={setEnd_date} />
+      <ReportNavBar handleSavedReport={handleSavedReport} />
+      <MainHead
+        startDate={startDate}
+        end_date={end_date}
+        allOpenTabs={allOpenTabs}
+      />
       <Box
         height={500}
         display="flex"

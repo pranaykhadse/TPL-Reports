@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import { Typography } from "@mui/material";
+import { TextField, Typography } from "@mui/material";
 
 import MuiTextField from "@mui/material/TextField";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
@@ -10,23 +10,19 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 
-import ListSubheader from "@mui/material/ListSubheader";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Collapse from "@mui/material/Collapse";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import DraftsIcon from "@mui/icons-material/Drafts";
-import SendIcon from "@mui/icons-material/Send";
-import ExpandLess from "@mui/icons-material/ExpandLess";
-import ExpandMore from "@mui/icons-material/ExpandMore";
-import StarBorder from "@mui/icons-material/StarBorder";
+import axios from "axios";
 
-const MainHead = ({ setStartDate, setEnd_date }) => {
+const MainHead = ({ allOpenTabs, startDate, end_date }) => {
   const [open, setOpen] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const TextField = React.forwardRef((props, ref) => (
+  const [setstoreJson, setSetstoreJson] = useState(null);
+  const [reportTitle, setReportTitle] = useState(null);
+  const refone = useRef(null);
+
+  const TextFieldDashed = React.forwardRef((props, ref) => (
     <MuiTextField
       {...props}
       ref={ref}
@@ -39,7 +35,7 @@ const MainHead = ({ setStartDate, setEnd_date }) => {
       }}
     />
   ));
-  const refone = useRef(null);
+
   const handleClick = () => {
     setOpen(!open);
   };
@@ -49,22 +45,85 @@ const MainHead = ({ setStartDate, setEnd_date }) => {
       if (!refone.current.contains(e.target)) {
         setOpen(false);
       }
-      
-    }
-    document.addEventListener('mousedown',handler)
+    };
+    document.addEventListener("mousedown", handler);
 
-    
     return () => {
-      document.removeEventListener('mousedown',handler)
+      document.removeEventListener("mousedown", handler);
+    };
+  });
+
+  const handleStoreJson = () => {
+    setSetstoreJson(allOpenTabs);
+
+    if (!reportTitle) {
+      alert("Report Name in missing...!");
+      return;
     }
-  })
+    
+    if (allOpenTabs.length === 0 ) {
+      alert("Report Data in missing...!");
+      return;
+    }
+    let data = JSON.stringify(allOpenTabs);
+    if (startDate && end_date) {
+      axios
+        .post(
+          `https://staging.trainingpipeline.com/backend/web/report-generate/save-report`,
+          {
+            name: reportTitle,
+            fields_json: data,
+            from: startDate,
+            to: end_date,
+          },
+          {
+            headers: {
+              accept: "application/json",
+            },
+          }
+        )
+        .then(
+          (res) => {
+            console.log("fdbd", res);
+          },
+          (error) => {
+            console.log(error);
+          }
+        );
+    } else {
+      axios
+        .post(
+          `https://staging.trainingpipeline.com/backend/web/report-generate/save-report`,
+          {
+            name: reportTitle,
+            fields_json: data,
+            from: "11-05-2024",
+            to: "15-05-2024",
+          },
+          {
+            headers: {
+              accept: "application/json",
+            },
+          }
+        )
+        .then(
+          (res) => {
+            console.log("fdbd", res);
+          },
+          (error) => {
+            console.log(error);
+          }
+        );
+    }
+  };
 
   return (
     <Box
       display="flex"
       flexDirection="row"
-      mb={2}
+      height="80px"
       mx={8}
+      paddingBottom="6px"
       sx={{
         justifyContent: "space-between",
         alignItems: "center",
@@ -78,6 +137,7 @@ const MainHead = ({ setStartDate, setEnd_date }) => {
         gap={3}
         sx={{
           alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
         <Box
@@ -93,7 +153,7 @@ const MainHead = ({ setStartDate, setEnd_date }) => {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DemoContainer components={["DatePicker"]}>
               <DatePicker
-                slots={{ textField: TextField }}
+                slots={{ textField: TextFieldDashed }}
                 format="DD-MM-YYYY"
                 onChange={(e) =>
                   `${e.$y}`.length == 4 &&
@@ -116,7 +176,7 @@ const MainHead = ({ setStartDate, setEnd_date }) => {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DemoContainer components={["DatePicker"]}>
               <DatePicker
-                slots={{ textField: TextField }}
+                slots={{ textField: TextFieldDashed }}
                 format="DD-MM-YYYY"
                 onChange={(e) =>
                   `${e.$y}`.length == 4 &&
@@ -126,8 +186,39 @@ const MainHead = ({ setStartDate, setEnd_date }) => {
             </DemoContainer>
           </LocalizationProvider>
         </Box>
+        <Box
+          display="flex"
+          flexDirection="row"
+          sx={{
+            alignItems: "center",
+          }}
+        >
+          <TextField
+            id="outlined-basic"
+            label="Report Name"
+            variant="outlined"
+            size="small"
+            onChange={(e) => setReportTitle(e.target.value)}
+            sx={{
+              width: "auto",
+              minWidth: "180px",
+              borderRadius: 1,
+              bgcolor: "#FFFFFF",
+              marginTop: "8px",
+            }}
+          />
+        </Box>
+        <Button
+          variant="contained"
+          onClick={() => handleStoreJson()}
+          sx={{
+            marginTop: "8px",
+          }}
+        >
+          Save
+        </Button>
       </Box>
-      <Box mx={4} my={4}>
+      <Box minWidth="fit-content">
         <List
           sx={{
             width: "100%",
@@ -135,6 +226,7 @@ const MainHead = ({ setStartDate, setEnd_date }) => {
             top: 1 / 2,
             right: "10%",
             zIndex: "tooltip",
+            marginTop: "8px",
           }}
           component="nav"
           aria-labelledby="nested-list-subheader"
@@ -143,15 +235,14 @@ const MainHead = ({ setStartDate, setEnd_date }) => {
             onClick={handleClick}
             ref={refone}
             sx={{
+              height: "40px",
+              boxShadow: 3,
               color: "#ffffff",
-              border: "1px solid grey",
-              bgcolor: "#2D9CE9",
+              bgcolor: "#197DC2",
               borderRadius: 1,
-              "&:focus": {
-                bgcolor: "#2D75D7",
-              },
               "&:hover": {
-                bgcolor: "#2D9CE9",
+                bgcolor: "#1964C2",
+                boxShadow: 5,
               },
             }}
           >
@@ -165,7 +256,7 @@ const MainHead = ({ setStartDate, setEnd_date }) => {
               color: "#ffffff",
               width: "100%",
               border: "1px solid grey",
-              bgcolor: "#c6f9f1",
+              bgcolor: "#1976d2",
               borderRadius: 1,
               position: "absolute",
               Button: -1,

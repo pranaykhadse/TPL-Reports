@@ -11,12 +11,13 @@ import StarBorder from "@mui/icons-material/StarBorder";
 import AddIcon from "@mui/icons-material/Add";
 
 import TableData from "../../../global-constant/TableData";
+import { useEffect } from "react";
 
-const TableList = ({ openTab, allOpenTabs, dragStart }) => {
+const TableList = ({ openTab, allOpenTabs2, dragStart }) => {
   const [selected, setSelected] = React.useState([]);
 
   const handleClick = (e) => {
-    if (allOpenTabs.length === 0) {
+    if (allOpenTabs2.length === 0) {
       if (!selected.includes(e)) {
         setSelected([e]);
       } else {
@@ -24,6 +25,14 @@ const TableList = ({ openTab, allOpenTabs, dragStart }) => {
       }
     }
   };
+
+  useEffect(() => {
+    if (allOpenTabs2.length !== 0){
+
+      setSelected(allOpenTabs2[0].show_type.name);
+    }
+  }, [allOpenTabs2])
+  
 
   return (
     <List
@@ -83,7 +92,7 @@ const TableList = ({ openTab, allOpenTabs, dragStart }) => {
                   }
                 >
                   <ListItemText primary={type[1]} />
-                  {allOpenTabs.filter((e) => e.data.type === type[0]).length >
+                  {allOpenTabs2.filter((e) => e.data.type === type[0]).length >
                   0 ? (
                     <RemoveIcon
                       sx={{
