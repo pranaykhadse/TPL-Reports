@@ -2,6 +2,17 @@ const TableData = [
   {
     title: "User",
     table_name: "tbl_user",
+    // fields: [
+    //   "username",
+    //   "email",
+    //   "status",
+    //   "lms_status",
+    //   "course_status",
+    //   "is_deleted",
+    //   "primary_group",
+    //   "all_course_enrolled",
+    //   "completed_courses",
+    // ],
     fields: [
       ["username","User Name"],
       ["email","Email"],
