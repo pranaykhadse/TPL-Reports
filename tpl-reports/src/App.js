@@ -1,11 +1,11 @@
-import ReportScenarios from "./components/MainContainer/ReportScenarios";
-
+import { Route, Routes } from "react-router-dom";
+import ReportMainContainer from "./components/MainContainer/ReportMainContainer";
 
 function App() {
   return (
-    <>
-    <ReportScenarios />
-    </>
+    <Routes>
+    <Route path="/" element={<ReportMainContainer />}/>
+  </Routes>
   );
 }
 

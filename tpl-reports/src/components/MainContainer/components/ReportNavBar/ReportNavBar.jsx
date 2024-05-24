@@ -10,7 +10,6 @@ const ReportNavBar = ({handleSavedReport}) => {
       flexDirection="row"
       mb={1}
       mx={8}
-      
       gap={1}
       sx={{
         alignItems: "center",
@@ -30,6 +29,7 @@ const ReportNavBar = ({handleSavedReport}) => {
       >
      {SaveReports.map((item, i) => (
         <Box
+      
           key={i}
           px="8px"
           py="4px"
@@ -41,6 +41,9 @@ const ReportNavBar = ({handleSavedReport}) => {
             color: "gray",
             minWidth: "fit-content",
             cursor: "pointer",
+            "&:hover": {
+              boxShadow: 3,
+            },
           }}
         >
           <Typography variant="p" component="p">

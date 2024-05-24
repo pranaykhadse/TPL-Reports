@@ -16,7 +16,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Collapse from "@mui/material/Collapse";
 import axios from "axios";
 
-const MainHead = ({ allOpenTabs, startDate, end_date }) => {
+const MainHead = ({ allOpenTabs, startDate, endDate, setStartDate, setEndDate }) => {
   const [open, setOpen] = useState(false);
   const [setstoreJson, setSetstoreJson] = useState(null);
   const [reportTitle, setReportTitle] = useState(null);
@@ -66,7 +66,7 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
       return;
     }
     let data = JSON.stringify(allOpenTabs);
-    if (startDate && end_date) {
+    if (startDate && endDate) {
       axios
         .post(
           `https://staging.trainingpipeline.com/backend/web/report-generate/save-report`,
@@ -74,7 +74,7 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
             name: reportTitle,
             fields_json: data,
             from: startDate,
-            to: end_date,
+            to: endDate,
           },
           {
             headers: {
@@ -180,7 +180,7 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
                 format="DD-MM-YYYY"
                 onChange={(e) =>
                   `${e.$y}`.length == 4 &&
-                  setEnd_date(dayjs(e.$d).format("DD/MM/YYYY"))
+                  setEndDate(dayjs(e.$d).format("DD/MM/YYYY"))
                 }
               />
             </DemoContainer>
