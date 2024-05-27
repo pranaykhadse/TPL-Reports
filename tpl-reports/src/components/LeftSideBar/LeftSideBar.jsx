@@ -24,6 +24,7 @@ const LeftSideBar = (props) => {
         dragStart={props.dragStart}
         tables={props.tables}
         setTables={props.setTables}
+        handleSelectColumn={props.handleSelectColumn}
       />
     </Box>
   );

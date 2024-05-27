@@ -36,6 +36,11 @@ const ReportMainContainer = () => {
   ]);
 
 
+  const [setselectedColumn, setSetselectedColumn] = useState([]);
+const handleSelectColumn = () => {
+
+}
+
 
   const navigate = useNavigate();
 
@@ -43,6 +48,10 @@ const ReportMainContainer = () => {
   useEffect(() => {
     setPage(qPam.get("page"));
   }, [qPam]);
+
+
+
+
 
   const handleSavedReport = (e) => {
     setAllOpenTAbs(e.fields_json);
@@ -385,11 +394,11 @@ const ReportMainContainer = () => {
           let tmpAndFilter = [...tables];
           tmpAndFilter[0]["related"] = tableData;
      
-          setTables(tmpAndFilter);
+          setTables([...tmpAndFilter]);
         }
       },
       (error) => {
-        console.log(error);
+        console.log("====error:",error);
       }
     );
 
@@ -417,7 +426,7 @@ const ReportMainContainer = () => {
     // }
   };
 
-console.log(tables);
+
 
   return (
     <Box
@@ -455,6 +464,8 @@ console.log(tables);
           dragStart={handleDragStart}
           tables={tables}
           setTables={setTables}
+
+          handleSelectColumn={handleSelectColumn}
         />
         <RightSideContainer
           allOpenTabs={allOpenTabs}
