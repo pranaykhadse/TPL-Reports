@@ -596,6 +596,7 @@ const ReportMainContainer = () => {
       1
     );
     setSelectedColumn([...arr]);
+    handleSelectColumn();
   };
 
   const getSaveData = async () => {

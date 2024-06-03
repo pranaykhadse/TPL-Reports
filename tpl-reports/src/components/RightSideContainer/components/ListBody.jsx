@@ -15,7 +15,7 @@ const ListBody = ({openTabData, tab, respSelectedColumn, sum, count}) => {
               sx={{ width: "100%", bgcolor: i % 2 !== 0 ? "#cfd1d3" : "" }}
               key={tab.table+"."+tab.column+i}
             >
-              <ListItemText primary={sum ? item["Total_"+tab.table+"."+tab.column] : count ? item["COUNT_"+tab.table+"."+tab.column]: item[tab.table+"."+tab.column] } />
+              <ListItemText primary={sum ? item["Total_"+tab.table+"."+tab.column] || "-" : count ? item["COUNT_"+tab.table+"."+tab.column] || "-": item[tab.table+"."+tab.column] || "- " } />
             </ListItem>
           ))}
         </List>
