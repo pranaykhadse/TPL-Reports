@@ -14,24 +14,15 @@ const RightSideContainer = ({
   setAllOpenTAbs,
   handleDropStatus,
   onDrop,
+  selectedColumn,
+  closeTab,
+  tables,
+  setTables,
+  handleSelectColumn,
+  respSelectedColumn,
 }) => {
-  const closeTab = (title, type) => {
-    let arr = allOpenTabs;
-    arr.splice(
-      allOpenTabs.findIndex((a) => a.table_name === title && a.type === type),
-      1
-    );
-    setAllOpenTAbs([...arr]);
 
-    let arr2 = allOpenTabs2;
-    arr2.splice(
-      allOpenTabs2.findIndex(
-        (a) => a.data.table_name === title && a.data.type === type
-      ),
-      1
-    );
-    setAllOpenTAbs2([...arr2]);
-  };
+ 
 
   const handleDragEnd = (results) => {
     let tempuser = [...allOpenTabs2];
@@ -56,11 +47,11 @@ const RightSideContainer = ({
             {...provided.droppableProps}
           >
             <DropableArea onDrop={() => onDrop(0)} handleDropStatus={handleDropStatus}/> 
-            {allOpenTabs2.map((tab, i) => (
+            {selectedColumn.map((tab, i) => (
               <Draggable
-                draggableId={tab.data.type}
+                draggableId={tab.column}
                 index={i}
-                key={tab.data.type}
+                key={tab.column+"-"+i}
               >
                 {(provided) => (
                   <React.Fragment>
@@ -69,6 +60,10 @@ const RightSideContainer = ({
                     tab={tab}
                     openTabData={openTabData}
                     closeTab={closeTab}
+                    tables={tables}
+                    setTables={setTables}
+                    handleSelectColumn={handleSelectColumn}
+                    respSelectedColumn={respSelectedColumn}
                   />
                    <DropableArea onDrop={() => onDrop(i + 1)} handleDropStatus={handleDropStatus} /> 
                   </React.Fragment>

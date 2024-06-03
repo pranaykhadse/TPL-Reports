@@ -16,10 +16,22 @@ import ListItemText from "@mui/material/ListItemText";
 import Collapse from "@mui/material/Collapse";
 import axios from "axios";
 
-const MainHead = ({ allOpenTabs, startDate, end_date }) => {
+const MainHead = ({
+  allOpenTabs,
+  startDate,
+  endDate,
+  setReportTitle,
+  reportTitle,
+  setStartDate,
+  setEndDate,
+  queryjsonData,
+  getSaveData,
+  pageNum,
+  responseData,
+}) => {
   const [open, setOpen] = useState(false);
   const [setstoreJson, setSetstoreJson] = useState(null);
-  const [reportTitle, setReportTitle] = useState(null);
+
   const refone = useRef(null);
 
   const TextFieldDashed = React.forwardRef((props, ref) => (
@@ -60,13 +72,13 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
       alert("Report Name in missing...!");
       return;
     }
-    
-    if (allOpenTabs.length === 0 ) {
+
+    if (queryjsonData.length === 0) {
       alert("Report Data in missing...!");
       return;
     }
-    let data = JSON.stringify(allOpenTabs);
-    if (startDate && end_date) {
+    let data = JSON.stringify(queryjsonData);
+    if (startDate && endDate) {
       axios
         .post(
           `https://staging.trainingpipeline.com/backend/web/report-generate/save-report`,
@@ -74,7 +86,7 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
             name: reportTitle,
             fields_json: data,
             from: startDate,
-            to: end_date,
+            to: endDate,
           },
           {
             headers: {
@@ -84,7 +96,8 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
         )
         .then(
           (res) => {
-            console.log("fdbd", res);
+            getSaveData();
+            setReportTitle(null);
           },
           (error) => {
             console.log(error);
@@ -97,8 +110,8 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
           {
             name: reportTitle,
             fields_json: data,
-            from: "11-05-2024",
-            to: "15-05-2024",
+            // from: "11-05-2024",
+            // to: "15-05-2024",
           },
           {
             headers: {
@@ -108,7 +121,9 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
         )
         .then(
           (res) => {
-            console.log("fdbd", res);
+            getSaveData();
+            setReportTitle(null);
+            alert(res.data.message);
           },
           (error) => {
             console.log(error);
@@ -116,6 +131,100 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
         );
     }
   };
+
+  const handleExport = () => {
+    let queryjson = JSON.stringify(queryjsonData);
+    let per_page = 15
+    let page = pageNum;
+
+    axios
+      .post(
+        `https://staging.trainingpipeline.com/backend/web/report-generate/export-excel`,
+        {
+          queryjson,
+          per_page,
+          page,
+        },
+        {
+          headers: {
+            accept: "application/json",
+          },
+          responseType: "blob", // Ensure the response is a blob
+        }
+      )
+      .then(
+        (res) => {
+          // Create a URL for the blob and download the file
+          const url = window.URL.createObjectURL(new Blob([res.data]));
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", "ReportData2.xls"); // Set the filename
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+  };
+
+  const handleExportAll = () => {
+    let queryjson = JSON.stringify(queryjsonData);
+    let per_page = 15*responseData.pages;
+    let page = responseData.pages;
+console.log("kldshvgjbh");
+    axios
+      .post(
+        `https://staging.trainingpipeline.com/backend/web/report-generate/export-excel`,
+        {
+          queryjson,
+          per_page,
+          page,
+        },
+        {
+          headers: {
+            accept: "application/json",
+          },
+          responseType: "blob", // Ensure the response is a blob
+        }
+      )
+      .then(
+        (res) => {
+          // Create a URL for the blob and download the file
+          const url = window.URL.createObjectURL(new Blob([res.data]));
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", "ReportData2.xls"); // Set the filename
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+  };
+
+  //   $.ajax({
+  //     url: '/download-excel',
+  //     method: 'GET',
+  //     xhrFields: {
+  //         responseType: 'blob'
+  //     },
+  //     success: function(data) {
+  //         const url = window.URL.createObjectURL(new Blob([data], { type: 'application/vnd.ms-excel' }));
+  //         const a = document.createElement('a');
+  //         a.href = url;
+  //         a.download = 'example.xls'; // Filename of the downloaded file
+  //         document.body.appendChild(a);
+  //         a.click();
+  //         window.URL.revokeObjectURL(url);
+  //     },
+  //     error: function(xhr, status, error) {
+  //         console.error('Error downloading file:', status, error);
+  //     }
+  // });
 
   return (
     <Box
@@ -140,7 +249,7 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
           justifyContent: "space-between",
         }}
       >
-        <Box
+        {/* <Box
           display="flex"
           flexDirection="row"
           sx={{
@@ -180,12 +289,12 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
                 format="DD-MM-YYYY"
                 onChange={(e) =>
                   `${e.$y}`.length == 4 &&
-                  setEnd_date(dayjs(e.$d).format("DD/MM/YYYY"))
+                  setEndDate(dayjs(e.$d).format("DD/MM/YYYY"))
                 }
               />
             </DemoContainer>
           </LocalizationProvider>
-        </Box>
+        </Box> */}
         <Box
           display="flex"
           flexDirection="row"
@@ -195,9 +304,10 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
         >
           <TextField
             id="outlined-basic"
-            label="Report Name"
+            label={reportTitle || "Report Name"}
             variant="outlined"
             size="small"
+            value={reportTitle || ""}
             onChange={(e) => setReportTitle(e.target.value)}
             sx={{
               width: "auto",
@@ -225,7 +335,6 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
             position: "relative",
             top: 1 / 2,
             right: "10%",
-            zIndex: "tooltip",
             marginTop: "8px",
           }}
           component="nav"
@@ -260,37 +369,31 @@ const MainHead = ({ allOpenTabs, startDate, end_date }) => {
               borderRadius: 1,
               position: "absolute",
               Button: -1,
-              zIndex: "tooltip",
+              zIndex: 20,
             }}
           >
             <List
               component="div"
               disablePadding
               sx={{
+                zIndex: 30,
                 bgcolor: "#2D9CE9",
                 "&:hover": {
                   bgcolor: "#2D75D7",
                 },
               }}
             >
-              <ListItemButton>
-                <ListItemText primary="Export" />
+              <ListItemButton onClick={() => handleExport()}>
+                <ListItemText primary="Export"  />
+              </ListItemButton>
+              <ListItemButton onClick={() => handleExportAll()}>
+                <ListItemText
+                  primary="Export All"
+                  
+                />
               </ListItemButton>
             </List>
-            <List
-              component="div"
-              disablePadding
-              sx={{
-                bgcolor: "#2D9CE9",
-                "&:hover": {
-                  bgcolor: "#2D75D7",
-                },
-              }}
-            >
-              <ListItemButton>
-                <ListItemText primary="Export All" />
-              </ListItemButton>
-            </List>
+          
           </Collapse>
         </List>
       </Box>

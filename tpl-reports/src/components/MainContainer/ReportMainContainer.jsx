@@ -26,98 +26,215 @@ const ReportMainContainer = () => {
   const [mainType, setMainType] = useState("");
   const [mainTitle, setMainTitle] = useState("");
 
+  const [table, setTable] = useState("");
+  const [column, setColumn] = useState("");
+  const [indexOfEl, setIndexOfEl] = useState(null);
+
+  const [queryjson, setQueryjson] = useState(null);
+
+  const [reportTitle, setReportTitle] = useState(null);
 
   const [tables, setTables] = useState([
     {
       tbl: "",
       related: [],
-      col: ["", ["--"]],
+      relatedShow: [],
+      col: [[], []],
+      sum: [[]],
+      count: [[]],
     },
   ]);
-
-
-  const [setselectedColumn, setSetselectedColumn] = useState([]);
-const handleSelectColumn = () => {
-
-}
-
-
+  const [saveReports, setSaveReports] = useState([]);
+  const [selectedColumn, setSelectedColumn] = useState([]);
+  const [respSelectedColumn, setRespSelectedColumn] = useState([]);
   const navigate = useNavigate();
 
-  const qPam = new URLSearchParams(window.location.search);
-  useEffect(() => {
-    setPage(qPam.get("page"));
-  }, [qPam]);
-
-
-
-
-
-  const handleSavedReport = (e) => {
-    setAllOpenTAbs(e.fields_json);
-    const newElement = [...e.fields_json];
-    let filterTitle;
-    let filterType;
-    let filterShowTitle;
-    let filterShowType;
-    let custom_column;
-    let arr = [];
-    newElement.map((item, i) => {
-      if (
-        item.type == "all_course_enrolled" ||
-        item.type == "completed_courses" ||
-        item.type == "registered_courses" ||
-        item.type == "total_courses" ||
-        item.type == "total_users"
-      ) {
-        custom_column = true;
-      } else {
-        custom_column = false;
-      }
-      if (TableData.filter((e) => e.table_name == item.table_name).length > 0) {
-        filterShowTitle = TableData.filter(
-          (e) => e.table_name == item.table_name
-        )[0].title;
-        filterShowType = TableData.filter(
-          (e) => e.table_name == item.table_name
-        )[0].fields.filter((e) => e[0] == item.type)[0][1];
-
-        filterTitle = TableData.filter(
-          (e) => e.table_name == item.table_name
-        )[0].table_name;
-        filterType = TableData.filter(
-          (e) => e.table_name == item.table_name
-        )[0].fields.filter((e) => e[0] == item.type)[0][0];
-
-  
-        arr.push({
-          data: {
-            required: false,
-            type: filterType,
-            className: "form-control",
-            label: "",
-            placeholder: "",
-            custom_column: custom_column,
-            table_name: filterTitle,
-          },
-          show_type: {
-            showType: filterShowType,
-            name: filterShowTitle,
-          },
-        });
-      }
-      return arr;
-    });
- 
-
-    setAllOpenTAbs2(arr);
+  const filterSum = (sums, col) => {
+    if (sums.filter((item) => item.split(":::")[1] == col).length > 0) {
+      return true;
+    } else {
+      return false;
+    }
   };
 
-  const handleDragStart = (type, title, show_type, mainTitle) => {
-    setType(type);
-    settitle(title);
-    setMainType(show_type);
-    setMainTitle(mainTitle);
+  const filterCount = (counts, col) => {
+    if (counts.filter((item) => item.split(":::")[1] == col).length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const handleSelectColumn = () => {
+    let tmpFilter = [];
+    let tmpReportField = [];
+    let tmpSumField = [];
+    let tmpCountField = [];
+    tables.map((item, i) => {
+      item.col[0].map((col) => {
+        tmpFilter.push({
+          table: item.tbl,
+          column: col,
+          index: i,
+          sum: filterSum(item.sum[0], col),
+          count: filterCount(item.count[0], col),
+        });
+        tmpReportField.push(item.tbl + ":::" + col);
+      });
+      item.sum[0].map((col) => {
+        tmpSumField.push(col);
+      });
+      item.count[0].map((col) => {
+        tmpCountField.push(col);
+      });
+    });
+
+    let filteredTable = removeEmptyFilter(tables);
+
+    let queryjson = {
+      table_Data: filteredTable,
+      reportfields: tmpReportField,
+      sum: tmpSumField,
+      count: tmpCountField,
+    };
+    postQueryJson(queryjson);
+    setQueryjson(queryjson);
+
+    setSelectedColumn(tmpFilter);
+  };
+
+  // console.log(queryjson);
+  // const qPam = new URLSearchParams(window.location.search);
+  // useEffect(() => {
+  //   setPage(qPam.get("page"));
+  // }, [qPam]);
+  function removeEmptyFilter(filter) {
+    let tmpFilter = [];
+    filter.map((item, i) => {
+      tmpFilter.push({
+        tbl: item.tbl,
+        related: item.related,
+      });
+    });
+    if (tmpFilter[filter.length - 1] !== undefined) {
+      if (
+        tmpFilter[filter.length - 1]["tbl"] !== undefined &&
+        tmpFilter[filter.length - 1]["tbl"] === ""
+      ) {
+        tmpFilter.pop();
+      }
+    }
+    return tmpFilter;
+  }
+
+  const buildQueryJSON = () => {};
+
+  const handleSavedReport = (e) => {
+    setReportTitle(e.name);
+    postQueryJson(JSON.parse(e.fields_json));
+    setQueryjson(JSON.parse(e.fields_json));
+    let fields = JSON.parse(e.fields_json).reportfields;
+    let tmpFilter = [];
+    fields.map((item, i) => [
+      tmpFilter.push({
+        table: item.split(":::")[0],
+        column: item.split(":::")[1],
+        index: null,
+        sum: [],
+        count: [],
+      }),
+    ]);
+    setSelectedColumn(tmpFilter);
+    // let tmpReportField = [];
+    // let tmpSumField = [];
+    // let tmpCountField = [];
+    // tables.map((item, i) => {
+    //   item.col[0].map((col) => {
+    //     tmpFilter.push({
+    //       table: item.tbl,
+    //       column: col,
+    //       index: i,
+    //       sum: filterSum(item.sum[0], col),
+    //       count: filterCount(item.count[0], col),
+    //     });
+    //     tmpReportField.push(item.tbl + ":::" + col);
+    //   });
+    //   item.sum[0].map((col) => {
+    //     console.log("friday", col);
+    //     tmpSumField.push(col);
+    //   });
+    //   item.count[0].map((col) => {
+    //     tmpCountField.push( col);
+    //   });
+    // });
+    // setAllOpenTAbs(e.fields_json);
+    // const newElement = [...e.fields_json];
+    // let filterTitle;
+    // let filterType;
+    // let filterShowTitle;
+    // let filterShowType;
+    // let custom_column;
+    // let arr = [];
+    // newElement.map((item, i) => {
+    //   if (
+    //     item.type == "all_course_enrolled" ||
+    //     item.type == "completed_courses" ||
+    //     item.type == "registered_courses" ||
+    //     item.type == "total_courses" ||
+    //     item.type == "total_users"
+    //   ) {
+    //     custom_column = true;
+    //   } else {
+    //     custom_column = false;
+    //   }
+    //   if (TableData.filter((e) => e.table_name == item.table_name).length > 0) {
+    //     filterShowTitle = TableData.filter(
+    //       (e) => e.table_name == item.table_name
+    //     )[0].title;
+    //     filterShowType = TableData.filter(
+    //       (e) => e.table_name == item.table_name
+    //     )[0].fields.filter((e) => e[0] == item.type)[0][1];
+
+    //     filterTitle = TableData.filter(
+    //       (e) => e.table_name == item.table_name
+    //     )[0].table_name;
+    //     filterType = TableData.filter(
+    //       (e) => e.table_name == item.table_name
+    //     )[0].fields.filter((e) => e[0] == item.type)[0][0];
+
+    //     arr.push({
+    //       data: {
+    //         required: false,
+    //         type: filterType,
+    //         className: "form-control",
+    //         label: "",
+    //         placeholder: "",
+    //         custom_column: custom_column,
+    //         table_name: filterTitle,
+    //       },
+    //       show_type: {
+    //         showType: filterShowType,
+    //         name: filterShowTitle,
+    //       },
+    //     });
+    //   }
+    //   return arr;
+    // });
+
+    // setAllOpenTAbs2(arr);
+  };
+
+  const handleDragStart = (tbl, col, index) => {
+    // setTable(tbl);
+    // setColumn(col);
+    // setIndexOfEl(index);
+    console.log(tbl);
+    console.log(col);
+    console.log(index);
+    // setType(type);
+    // settitle(title);
+    // setMainType(show_type);
+    // setMainTitle(mainTitle);
   };
 
   const handleDropStatus = (e) => {
@@ -131,7 +248,7 @@ const handleSelectColumn = () => {
       }, 500);
     } else {
       setTimeout(() => {
-        handleDragDrop(position, type, title, mainType, mainTitle);
+        handleDragDrop(table, column, indexOfEl);
       }, 500);
     }
   };
@@ -226,199 +343,236 @@ const handleSelectColumn = () => {
     }
   };
 
-  const handleRightTab = (type, title, showType, name) => {
-    let custom_column;
-    if (
-      type == "all_course_enrolled" ||
-      type == "completed_courses" ||
-      type == "registered_courses" ||
-      type == "total_courses" ||
-      type == "total_users"
-    ) {
-      custom_column = true;
-    } else {
-      custom_column = false;
+  const handleRightTab = (table, column, indexOfEl) => {
+    if (selectedColumn.length == 0) {
+      console.log("1", table);
+      console.log("2", column);
+      console.log("3", indexOfEl);
     }
-    if (allOpenTabs2.length > 0 && allOpenTabs.length === 0) {
-      let arrList = allOpenTabs2;
-      let arrList2 = [];
-      arrList.map((item, i) => {
-        arrList2.push(item.data);
-      });
+    // let custom_column;
+    // if (
+    //   type == "all_course_enrolled" ||
+    //   type == "completed_courses" ||
+    //   type == "registered_courses" ||
+    //   type == "total_courses" ||
+    //   type == "total_users"
+    // ) {
+    //   custom_column = true;
+    // } else {
+    //   custom_column = false;
+    // }
+    // if (allOpenTabs2.length > 0 && allOpenTabs.length === 0) {
+    //   let arrList = allOpenTabs2;
+    //   let arrList2 = [];
+    //   arrList.map((item, i) => {
+    //     arrList2.push(item.data);
+    //   });
 
-      if (allOpenTabs.filter((e) => e.type === type).length === 0) {
-        setAllOpenTAbs([
-          ...arrList2,
-          {
-            required: false,
-            type: type,
-            className: "form-control",
-            label: "",
-            placeholder: "",
-            custom_column: custom_column,
-            table_name: title,
-          },
-        ]);
-        setAllOpenTAbs2([
-          ...allOpenTabs2,
-          {
-            data: {
-              required: false,
-              type: type,
-              className: "form-control",
-              label: "",
-              placeholder: "",
-              custom_column: custom_column,
-              table_name: title,
-            },
-            show_type: {
-              showType: showType,
-              name: name,
-            },
-          },
-        ]);
-      }
-    } else {
-      if (allOpenTabs.filter((e) => e.type === type).length === 0) {
-        setAllOpenTAbs([
-          ...allOpenTabs,
-          {
-            required: false,
-            type: type,
-            className: "form-control",
-            label: "",
-            placeholder: "",
-            custom_column: custom_column,
-            table_name: title,
-          },
-        ]);
-        setAllOpenTAbs2([
-          ...allOpenTabs2,
-          {
-            data: {
-              required: false,
-              type: type,
-              className: "form-control",
-              label: "",
-              placeholder: "",
-              custom_column: custom_column,
-              table_name: title,
-            },
-            show_type: {
-              showType: showType,
-              name: name,
-            },
-          },
-        ]);
-      }
-    }
+    //   if (allOpenTabs.filter((e) => e.type === type).length === 0) {
+    //     setAllOpenTAbs([
+    //       ...arrList2,
+    //       {
+    //         required: false,
+    //         type: type,
+    //         className: "form-control",
+    //         label: "",
+    //         placeholder: "",
+    //         custom_column: custom_column,
+    //         table_name: title,
+    //       },
+    //     ]);
+    //     setAllOpenTAbs2([
+    //       ...allOpenTabs2,
+    //       {
+    //         data: {
+    //           required: false,
+    //           type: type,
+    //           className: "form-control",
+    //           label: "",
+    //           placeholder: "",
+    //           custom_column: custom_column,
+    //           table_name: title,
+    //         },
+    //         show_type: {
+    //           showType: showType,
+    //           name: name,
+    //         },
+    //       },
+    //     ]);
+    //   }
+    // } else {
+    //   if (allOpenTabs.filter((e) => e.type === type).length === 0) {
+    //     setAllOpenTAbs([
+    //       ...allOpenTabs,
+    //       {
+    //         required: false,
+    //         type: type,
+    //         className: "form-control",
+    //         label: "",
+    //         placeholder: "",
+    //         custom_column: custom_column,
+    //         table_name: title,
+    //       },
+    //     ]);
+    //     setAllOpenTAbs2([
+    //       ...allOpenTabs2,
+    //       {
+    //         data: {
+    //           required: false,
+    //           type: type,
+    //           className: "form-control",
+    //           label: "",
+    //           placeholder: "",
+    //           custom_column: custom_column,
+    //           table_name: title,
+    //         },
+    //         show_type: {
+    //           showType: showType,
+    //           name: name,
+    //         },
+    //       },
+    //     ]);
+    //   }
+    // }
   };
 
-  const fetchData = async () => {
-    if (allOpenTabs.length > 0) {
-      if (startDate && endDate) {
-        let data = JSON.stringify(allOpenTabs);
-        let datefilter = JSON.stringify([
-          {
-            start_date: startDate,
-            end_date: endDate,
-          },
-        ]);
+  // const fetchData = async () => {
+  //   if (allOpenTabs.length > 0) {
+  //     if (startDate && endDate) {
+  //       let data = JSON.stringify(allOpenTabs);
+  //       let datefilter = JSON.stringify([
+  //         {
+  //           start_date: startDate,
+  //           end_date: endDate,
+  //         },
+  //       ]);
 
-        axios
-          .post(
-            `https://staging.trainingpipeline.com/backend/web/report-generate/generate?per-page=15&page=${page}`,
-            { data, datefilter },
-            {
-              headers: {
-                accept: "application/json",
-              },
-            }
-          )
-          .then(
-            (res) => {
-              setOpenTabData(res.data.payload);
-              setResponseData(res.data);
-            },
-            (error) => {
-              console.log(error);
-            }
-          );
-      } else {
-        let data = JSON.stringify(allOpenTabs);
-        axios
-          .post(
-            `https://staging.trainingpipeline.com/backend/web/report-generate/generate?per-page=15&page=${page}`,
-            { data },
-            {
-              headers: {
-                accept: "application/json",
-              },
-            }
-          )
-          .then(
-            (res) => {
-              setOpenTabData(res.data.payload);
-              setResponseData(res.data);
-            },
-            (error) => {
-              console.log(error);
-            }
-          );
-      }
-    }
+  //       axios
+  //         .post(
+  //           `https://staging.trainingpipeline.com/backend/web/report-generate/generate?per-page=15&page=${page}`,
+  //           { data, datefilter },
+  //           {
+  //             headers: {
+  //               accept: "application/json",
+  //             },
+  //           }
+  //         )
+  //         .then(
+  //           (res) => {
+  //             setOpenTabData(res.data.payload);
+  //             setResponseData(res.data);
+  //           },
+  //           (error) => {
+  //             console.log(error);
+  //           }
+  //         );
+  //     } else {
+  //       let data = JSON.stringify(allOpenTabs);
+  //       axios
+  //         .post(
+  //           `https://staging.trainingpipeline.com/backend/web/report-generate/generate?per-page=15&page=${page}`,
+  //           { data },
+  //           {
+  //             headers: {
+  //               accept: "application/json",
+  //             },
+  //           }
+  //         )
+  //         .then(
+  //           (res) => {
+  //             setOpenTabData(res.data.payload);
+  //             setResponseData(res.data);
+  //           },
+  //           (error) => {
+  //             console.log(error);
+  //           }
+  //         );
+  //     }
+  //   }
+  // };
+
+  const postQueryJson = async (jsonData) => {
+    let queryjson = JSON.stringify(jsonData);
+    axios
+      .post(
+        `https://staging.trainingpipeline.com/backend/web/mii/api/v1/mii-report/query-search?per-page=15&page=${page}`,
+        { queryjson },
+        {
+          headers: {
+            accept: "application/json",
+          },
+        }
+      )
+      .then(
+        (res) => {
+          if (res.data !== undefined) {
+            setRespSelectedColumn(res.data.payload);
+            setResponseData(res.data);
+          }
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
   };
+
+  useEffect(() => {
+    postQueryJson(queryjson);
+  }, [page]);
 
   const fetchTableData = async () => {
+    setSelectedColumn([]);
     await axios
-    .get(
-      `https://staging.trainingpipeline.com/backend/web/mii/applicant/get-tables`,
-      {
-        headers: {
-          accept: "application/json",
-        },
-      }
-    )
-    .then(
-      (res) => {
-        if (res.data.data !== undefined) {
-      
-          
-          let tableData = Object.values(res.data.data);
-          let related = [];
-          related[0] = tableData;
-          // remove this line
-          // setRelatedAndTables(related)
-          // setRelatedOrTables(related)
-          
-          let tmpAndFilter = [...tables];
-          tmpAndFilter[0]["related"] = tableData;
-     
-          setTables([...tmpAndFilter]);
+      .get(
+        `https://staging.trainingpipeline.com/backend/web/mii/applicant/get-tables`,
+        {
+          headers: {
+            accept: "application/json",
+          },
         }
-      },
-      (error) => {
-        console.log("====error:",error);
-      }
-    );
+      )
+      .then(
+        (res) => {
+          if (res.data.data !== undefined) {
+            let tableData = Object.values(res.data.data);
+            let related = [];
+            related[0] = tableData;
+            // remove this line
+            // setRelatedAndTables(related)
+            // setRelatedOrTables(related)
 
+            let tmpAndFilter = [
+              {
+                tbl: "",
+                related: [],
+                relatedShow: [],
+                col: [[], []],
+                sum: [[]],
+                count: [[]],
+              },
+            ];
+            tmpAndFilter[0]["related"] = tableData;
+            tmpAndFilter[0]["relatedShow"] = tableData;
 
-  }
+            setTables([...tmpAndFilter]);
+          }
+        },
+        (error) => {
+          console.log("====error:", error);
+        }
+      );
+  };
   useEffect(() => {
     fetchTableData();
-  }, [])
+  }, []);
 
-
-
-  
-
-  useEffect(() => {
-    fetchData();
-  }, [allOpenTabs, page, endDate]);
+  // useEffect(() => {
+  //   fetchData();
+  // }, [allOpenTabs, page, endDate]);
 
   const handleChangePage = (event, value) => {
-
-    navigate(`/?page=${value}`);
+    // navigate(`/?page=${value}`);
+    setPage(value);
     // if (allOpenTabs.length > 0) {
     //   setPage(value);
     // } else {
@@ -426,7 +580,49 @@ const handleSelectColumn = () => {
     // }
   };
 
+  const closeTab = (table, column, index) => {
+    if (index == null) return;
+    let tmpFilter = [...tables];
+    let tempSelectArr = [...tables[index]["col"][0]];
+    tempSelectArr.splice(
+      tables[index].col[0].findIndex((a) => a === column),
+      1
+    );
+    tmpFilter[index]["col"][0] = tempSelectArr;
+    setTables(tmpFilter);
+    let arr = selectedColumn;
+    arr.splice(
+      selectedColumn.findIndex((a) => a.table === table && a.column === column),
+      1
+    );
+    setSelectedColumn([...arr]);
+  };
 
+  const getSaveData = async () => {
+    axios
+      .get(
+        `https://staging.trainingpipeline.com/backend/web/report-generate/get-reports`,
+        {
+          headers: {
+            accept: "application/json",
+          },
+        }
+      )
+      .then(
+        (res) => {
+          if (res.data !== undefined) {
+            setSaveReports([...res.data.reports]);
+          }
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+  };
+
+  useEffect(() => {
+    getSaveData();
+  }, []);
 
   return (
     <Box
@@ -437,13 +633,23 @@ const handleSelectColumn = () => {
         justifyContent: "center",
       }}
     >
-      <ReportNavBar handleSavedReport={handleSavedReport} />
+      <ReportNavBar
+        handleSavedReport={handleSavedReport}
+        saveReports={saveReports}
+        getSaveData={getSaveData}
+      />
       <MainHead
         startDate={startDate}
         endDate={endDate}
         setStartDate={setStartDate}
         setEndDate={setEndDate}
         allOpenTabs={allOpenTabs}
+        setReportTitle={setReportTitle}
+        reportTitle={reportTitle}
+        queryjsonData={queryjson}
+        getSaveData={getSaveData}
+        pageNum={page}
+        responseData={responseData}
       />
       <Box
         height={500}
@@ -464,8 +670,12 @@ const handleSelectColumn = () => {
           dragStart={handleDragStart}
           tables={tables}
           setTables={setTables}
-
+          buildQueryJSON={buildQueryJSON}
+          selectedColumn={selectedColumn}
+          setSelectedColumn={setSelectedColumn}
           handleSelectColumn={handleSelectColumn}
+          closeTab={closeTab}
+          fetchTableData={fetchTableData}
         />
         <RightSideContainer
           allOpenTabs={allOpenTabs}
@@ -476,6 +686,12 @@ const handleSelectColumn = () => {
           handleDropStatus={handleDropStatus}
           dropStatus={dropStatus}
           onDrop={handleDrop}
+          selectedColumn={selectedColumn}
+          closeTab={closeTab}
+          tables={tables}
+          setTables={setTables}
+          handleSelectColumn={handleSelectColumn}
+          respSelectedColumn={respSelectedColumn}
         />
       </Box>
       <Box
@@ -484,12 +700,12 @@ const handleSelectColumn = () => {
           justifyContent: "center",
         }}
       >
-        {allOpenTabs.length > 0 && (
+        {selectedColumn.length > 0 && (
           <Pagination
-            count={allOpenTabs.length > 0 ? responseData.pages : 1}
+            count={selectedColumn.length > 0 ? responseData.pages : 1}
             variant="outlined"
             shape="rounded"
-            // onChange={(e) => navigate(`/?page=${e.value}`)}
+            // onChange={(e) => console.log(`/?page=${e}`,e.target)}
             onChange={handleChangePage}
           />
         )}

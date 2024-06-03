@@ -1,8 +1,52 @@
-import { Box, Button, TextField, Typography } from "@mui/material";
-import React from "react";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography, useMediaQuery, useTheme } from "@mui/material";
+import React, { useState } from "react";
 import { SaveReports } from "../../../../global-constant/SaveReport";
+import axios from "axios";
+import { useEffect } from "react";
+import CancelIcon from '@mui/icons-material/Cancel';
 
-const ReportNavBar = ({handleSavedReport}) => {
+const ReportNavBar = ({handleSavedReport,saveReports,getSaveData,fetchTableData}) => {
+  const [open, setOpen] = React.useState(false);
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+
+ 
+
+  const handleDelete = (id) => {
+    axios
+    .post(
+      `https://staging.trainingpipeline.com/backend/web/report-generate/delete-report`,{
+        id
+      },
+      {
+        headers: {
+          accept: "application/json",
+        },
+      }
+    )
+    .then(
+      (res) => {
+        if (res.data !== undefined) {
+
+          handleClose();
+          getSaveData();
+          alert(res.data.message);
+        }
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
+  }
 
   return (
     <Box
@@ -28,14 +72,20 @@ const ReportNavBar = ({handleSavedReport}) => {
       }}
       
       >
-     {SaveReports.map((item, i) => (
+     {saveReports.map((item, i) => (
         <Box
           key={i}
-          px="8px"
+          pl="8px"
+          pr="4px"
           py="4px"
-          onClick={() => handleSavedReport(item)}
+          display="flex"
+          flexDirection="row"
+          
           sx={{
             alignItems: "center",
+            justifyContent: "center",
+            alignContent: "center",
+            gap: 1,
             bgcolor: "#ffffff",
             borderRadius: 1,
             color: "gray",
@@ -43,10 +93,43 @@ const ReportNavBar = ({handleSavedReport}) => {
             cursor: "pointer",
           }}
         >
-          <Typography variant="p" component="p">
+          <Typography 
+          onClick={() => handleSavedReport(item)}
+          variant="p" component="p">
             {item.name}
           </Typography>
+          <CancelIcon sx={{
+            height: "20px",
+            cursor: "pointer",
+          }}
+          onClick={() => {handleClickOpen()}}
+          />
+           <Dialog
+        fullScreen={fullScreen}
+        open={open}
+        slotProps={{ backdrop: { sx: { background: 'rgba(255, 255, 255, 0.25)', boxShadow: 1, } } }}
+        onClose={() => handleClose()}
+        aria-labelledby="responsive-dialog-title"
+      >
+        <DialogTitle id="responsive-dialog-title">
+          {"Do you want to delete the report?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Report will be permanantly deleted.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={() => handleClose()}>
+            No
+          </Button>
+          <Button onClick={() => handleDelete(item.id)} autoFocus>
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
         </Box>
+        
       ))}
      </Box>
        <Box
@@ -76,6 +159,7 @@ const ReportNavBar = ({handleSavedReport}) => {
           Search
         </Button>
         </Box>
+       
     </Box>
   );
 };

@@ -18,7 +18,7 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import axios from "axios";
-import { Chip, OutlinedInput } from "@mui/material";
+import { Chip, OutlinedInput, useTheme } from "@mui/material";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -31,27 +31,90 @@ const MenuProps = {
   },
 };
 
+function getStyles(name, personName, theme) {
+  return {
+    fontWeight:
+      personName.indexOf(name) === -1
+        ? theme.typography.fontWeightRegular
+        : theme.typography.fontWeightMedium,
+  };
+}
 
-const TableList = ({ openTab, allOpenTabs2, dragStart, tables, setTables, handleSelectColumn }) => {
+const TableList = ({
+  openTab,
+  allOpenTabs2,
+  dragStart,
+  tables,
+  setTables,
+  handleSelectColumn,
+  buildQueryJSON,
+  closeTab,
+  selectedColumn,
+  fetchTableData,
+  setSelectedColumn
+}) => {
   const [selected, setSelected] = useState([]);
   const [open, setOpen] = useState(false);
-  const [selectedColumn, setSelectedColumn] = useState([]);
+
+  const theme = useTheme();
 
   const addLine = (event, index) => {
     let tmpFilter = [];
-    tmpFilter = [...tables];
+    if (index == 0) {
+      let relateShowArr = tables[0].relatedShow;
+      setSelectedColumn([]);
+      tmpFilter = [
+        {
+          tbl: "",
+          related: [],
+          relatedShow: relateShowArr,
+          col: [[], []],
+          sum: [[]],
+          count: [[]],
+        }
+      ];
+    }else{
+      if(typeof tables[index + 1] === 'undefined') {
+        // does not exist
+       
+        tmpFilter = [...tables];
+      }else {
+        // does exist
+        tmpFilter = [...tables];
+        tmpFilter.length = index + 1;
+    }
+    }
+
     tmpFilter[index]["tbl"] = event.target.value;
     tmpFilter[index + 1] = {
       tbl: "",
       related: [],
-      col: ["", ["--"]],
+      relatedShow: [],
+      col: [[], []],
+      sum: [[]],
+      count: [[]],
     };
     return tmpFilter;
   };
 
-  const handleTableChange = async (event, index) => {
-    let tmpFilter = addLine(event, index);
+  const filterAddedArray = (tbl,relTables, resp) => {
+    let arr1 = [...relTables];
+    let arr2 = [...resp];
+    let allArr = arr1.concat(arr2);
+    let uniqueFinalArray = allArr.filter(function (item, pos) {
+      return allArr.indexOf(item) == pos;
+    });
 
+    return uniqueFinalArray.filter((el) => el != tbl);
+
+  };
+
+  const handleTableChange = async (event, index) => {
+    // if (index === 0) {
+    //   console.log("test");
+    //   fetchTableData()
+    // }
+    let tmpFilter = addLine(event, index);
     await axios
       .get(
         `https://staging.trainingpipeline.com/backend/web/mii/applicant/columns?table=${event.target.value}`,
@@ -66,6 +129,7 @@ const TableList = ({ openTab, allOpenTabs2, dragStart, tables, setTables, handle
           let columnData = Object.values(res.data.data);
           tmpFilter[index]["col"][1] = columnData;
         }
+
         return tmpFilter;
       })
       .then(
@@ -80,21 +144,35 @@ const TableList = ({ openTab, allOpenTabs2, dragStart, tables, setTables, handle
               }
             )
             .then((resp) => {
-              let relatedData =
-                index === 0
-                  ? [event.target.value]
-                  : tmpFilter[index]["related"];
-                  console.log("=1=2", resp.data);
-                  if (
-                    resp.data !== null &&
-                    resp.data !== undefined &&
-                    resp.data.length > 0
-                  ) {
-                relatedData.push(...resp.data);
+              let relatedData1 = [];
+              let relatedData2 = [];
+              let relatedData3 = [];
+              if (
+                resp.data !== null &&
+                resp.data !== undefined &&
+                resp.data.length > 0
+              ) {
+            
+                if (tables.length> 1) {
+                  let arr = filterAddedArray(
+                    tmpFilter[index].tbl,
+                    tmpFilter[index]["related"],
+                    resp.data
+                  );
+                  relatedData3.push(...arr);
+                }else{
+                  relatedData3.push(...resp.data);
+                }
+                relatedData1.push(...resp.data);
+                relatedData2.push(...resp.data);
               }
+              tmpFilter[index]["related"] = Array.from(new Set(relatedData1));
+              tmpFilter[index+ 1]["relatedShow"] = Array.from(new Set(relatedData3));
+              
               tmpFilter[index + 1]["related"] = Array.from(
-                new Set(relatedData)
+                new Set(relatedData2)
               );
+
               setTables([...tmpFilter]);
             });
         },
@@ -103,119 +181,235 @@ const TableList = ({ openTab, allOpenTabs2, dragStart, tables, setTables, handle
         }
       );
 
-    setTables(tmpFilter);
   };
-  function findTypeByName(array, value) {
-    for (let i = 0; i < array.length; i++) {
-      if (array[i].name === value) {
-        return array[i];
-      }
-    }
-    return null; // Element not found
-  }
 
-  const handleColumnChange = (event, index) => {
- 
+  const handleColumnChange = (value, index) => {
     let tmpFilter = [...tables];
-    let columnSelected = findTypeByName(
-      tmpFilter[index]["col"][1],
-      event.target.value
-    );
-    // alert(dataType)
-    setSelectedColumn([
-      ...selectedColumn,
-      event.target.value
-    ])
-    if (tmpFilter.length <= 1 || columnSelected.type === undefined) {
-      // avoid deleting first line
-      return;
-    }
-    tmpFilter[index]["col"][0] = columnSelected;
+    let tempSelectArr = [...tables[index]["col"][0]];
+    tempSelectArr.push(value);
+
+    tmpFilter[index]["col"][0] = tempSelectArr;
     setTables(tmpFilter);
+    handleSelectColumn();
+    buildQueryJSON();
   };
 
   const handleClick = (e) => {
-    if (allOpenTabs2.length === 0) {
-      if (!selected.includes(e)) {
-        setSelected([e]);
-      } else {
-        setSelected([]);
-      }
+    if (!selected.includes(e)) {
+      setSelected([...selected, e]);
+    } else {
+      let selectedArr = [...selected];
+      const updatedArr = selectedArr.filter((item) => item != e);
+      setSelected([...updatedArr]);
     }
+    // if (allOpenTabs2.length === 0) {
+    //   if (!selected.includes(e)) {
+    //     setSelected([e]);
+    //   } else {
+    //     setSelected([]);
+    //   }
+    // }
   };
-console.log(selected);
-  useEffect(() => {
-    if (allOpenTabs2.length !== 0) {
-      setSelected(allOpenTabs2[0].show_type.name);
-    }
-  }, [allOpenTabs2]);
+
+  // useEffect(() => {
+  //   if (allOpenTabs2.length !== 0) {
+  //     setSelected(allOpenTabs2[0].show_type.name);
+  //   }
+  // }, [allOpenTabs2]);
 
   const SearchFields = ({ item, i }) => {
     return (
-      <>
-        <Box sx={{ minWidth: "100%", height: "fit-content" }}>
-          <FormControl fullWidth>
-            <InputLabel id="demo-simple-select-label">Tables</InputLabel>
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={item.tbl}
-              label="Tables"
-              onChange={(value) => handleTableChange(value, i)}
-            >
-              {item.related.map((table, index) => (
-                <MenuItem key={index} value={table}>
-                  {table}
+      item.relatedShow.length != 0 && (
+        <>
+          <Box sx={{ minWidth: "100%", height: "fit-content" }}>
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Tables</InputLabel>
+              <Select
+                labelId="demo-multiple-chip-label"
+                id="demo-multiple-chip"
+                value={item.tbl}
+                label="Tables"
+                onChange={(value) => handleTableChange(value, i)}
+                // onClick={() => console.log("vbdvjb")}
+              >
+                {item.relatedShow.map((table, index) => (
+                  <MenuItem key={index} value={table}>
+                    {table}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+          {/* <Box sx={{ minWidth: "100%", height: "fit-content" }}>
+        <FormControl fullWidth>
+          <InputLabel id="demo-simple-select-label">Columns</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            multiple
+            value={item["col"][0]}
+            onChange={(value) => handleColumnChange(value, i)}
+            input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
+            renderValue={(selected) => (
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                {selected.map((value, i) => (
+                  <Chip key={i} label={value} />
+                ))}
+              </Box>
+            )}
+            MenuProps={MenuProps}
+          >
+            {item.col[1].map((field, index) => (
+              <MenuItem
+                key={index}
+                value={field.name}
+                style={getStyles(field.name, item["col"][1], theme)}
+              >
+                {field.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box> */}
+    
+          {item.col[1].length != 0 && (
+            <Box key={i} width="100%">
+              <ListItemButton
+                onClick={() => handleClick(item.tbl)}
+                sx={{
+                  border: "1px solid grey",
+                  bgcolor: "#c6f9f1",
+                  borderRadius: 1,
+                  "&:hover": {
+                    bgcolor: "#a8f3d2",
+                  },
+                }}
+              >
+                <ListItemText
+                  primary="Columns"
+                  sx={{
+                    color: "#0d6016",
+                  }}
+                />
+                {selected.includes(item.tbl) ? <ExpandLess /> : <ExpandMore />}
+              </ListItemButton>
+              <Collapse
+                in={selected.includes(item.tbl)}
+                timeout="auto"
+                unmountOnExit
+              >
+                {item?.col[1].map((col, index) => (
+                  <List
+                    draggable
+                    onDragStart={() => dragStart(item.tbl, col.name, i)}
+                    key={col.name + "-" + index}
+                    component="div"
+                    disablePadding
+                    sx={{
+                      bgcolor: "background.paper",
+                      border: "1px solid grey",
+                      borderRadius: 1,
+                      "& .MuiButtonBase-root": {
+                        paddingY: "1px",
+                      },
+                    }}
+                  >
+                    <ListItemButton
+                      onClick={() =>
+                        item.col[0].filter((e) => e === col.name).length > 0
+                          ? closeTab(item.tbl, col.name, i)
+                          : handleColumnChange(col.name, i)
+                      }
+                    >
+                      <ListItemText primary={col.name} />
+                      {item.col[0].filter((e) => e === col.name).length > 0 ? (
+                        <RemoveIcon
+                          sx={{
+                            height: "25px",
+                          }}
+                        />
+                      ) : (
+                        <AddIcon
+                          sx={{
+                            height: "25px",
+                          }}
+                        />
+                      )}
+                    </ListItemButton>
+                  </List>
+                ))}
+              </Collapse>
+            </Box>
+          )}
+
+          {/* <Box sx={{ minWidth: "100%", height: "fit-content" }}>
+        <FormControl fullWidth>
+          <InputLabel id="demo-simple-select-label">Sum</InputLabel>
+          <Select
+            labelId="demo-simple-select-label-sum"
+            id="demo-simple-select-sum"
+           multiple
+            value={item["sum"][0]}
+           
+            onChange={(value) => handleSumChange(value, i, item.tbl)}
+            input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
+            renderValue={(selected) => (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                {selected.map((value,i) => (
+                  <Chip key={i} label={value} />
+                ))}
+              </Box>
+            )}
+            MenuProps={MenuProps}
+          >
+            { item.sum[1].map((field, index) => (
+                <MenuItem key={index} value={field.name} style={getStyles(field.name, item["col"][1], theme)}>
+                  {field.name}
                 </MenuItem>
               ))}
-            </Select>
-          </FormControl>
-        </Box>
-        <Box sx={{ minWidth: "100%", height: "fit-content" }}>
-          <FormControl fullWidth>
-            <InputLabel id="demo-simple-select-label">Columns</InputLabel>
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-       
-              value={item["col"][0].length === 0 ? [] : selectedColumn}
-              label="Columns"
-              onChange={(value) => handleColumnChange(value, i)}
-              input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
-              renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {selected.map((value) => (
-                    <Chip key={value} label={value} />
-                  ))}
-                </Box>
-              )}
-              MenuProps={MenuProps}
-            >
-              {item.col[1].length === 0 ? (
-                <MenuItem key="0" value={item["col"][0]}>
-                  {item["col"][0]}
+          </Select>
+        </FormControl>
+      </Box>
+      <Box sx={{ minWidth: "100%", height: "fit-content" }}>
+        <FormControl fullWidth>
+          <InputLabel id="demo-simple-select-label">Count</InputLabel>
+          <Select
+            labelId="demo-simple-select-label-count"
+            id="demo-simple-select-count"
+           multiple
+            value={item["count"][0]}
+           
+            onChange={(value) => handleCountChange(value, i, item.tbl)}
+            input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
+            renderValue={(selected) => (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                {selected.map((value,i) => (
+                  <Chip key={i} label={value} />
+                ))}
+              </Box>
+            )}
+            MenuProps={MenuProps}
+          >
+            { item.count[1].map((field, index) => (
+                <MenuItem key={index} value={field.name} style={getStyles(field.name, item["col"][1], theme)}>
+                  {field.name}
                 </MenuItem>
-              ) : (
-                item.col[1].map((field, index) => (
-                  <MenuItem key={index} value={field.name}>
-                    {field.name}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
-        </Box>
-      </>
+              ))}
+          </Select>
+        </FormControl>
+      </Box> */}
+        </>
+      )
     );
   };
-console.log(tables);
+
   return (
     <>
       {tables.map((item, i) => (
         <SearchFields item={item} i={i} key={i} />
       ))}
 
-      <List
+      {/* <List
         sx={{
           height: "fit-content",
           width: "100%",
@@ -344,7 +538,7 @@ console.log(tables);
             </List>
           </Collapse>
         </Box>
-      </List>
+      </List> */}
     </>
   );
 };

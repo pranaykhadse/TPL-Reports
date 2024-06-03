@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 
 import TableList from "./components/TableList";
 import SearchTableInput from "./components/SearchTableInput";
+import { Button } from "@mui/material";
 
 const LeftSideBar = (props) => {
   return (
@@ -17,7 +18,16 @@ const LeftSideBar = (props) => {
       minWidth={260}
       sx={{ height: "100%", overflowX: "auto" }}
     >
-      <SearchTableInput />
+      {/* <SearchTableInput /> */}
+      <Box
+        sx={{
+          width: "100%",
+        }}
+      >
+        <Button variant="contained" onClick={() => props.fetchTableData()}>
+          Reset
+        </Button>
+      </Box>
       <TableList
         openTab={props.openTab}
         allOpenTabs2={props.allOpenTabs2}
@@ -25,6 +35,11 @@ const LeftSideBar = (props) => {
         tables={props.tables}
         setTables={props.setTables}
         handleSelectColumn={props.handleSelectColumn}
+        buildQueryJSON={props.buildQueryJSON}
+        selectedColumn={props.selectedColumn}
+        closeTab={props.closeTab}
+        fetchTableData={props.fetchTableData}
+        setSelectedColumn={props.setSelectedColumn}
       />
     </Box>
   );
