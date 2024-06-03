@@ -1,7 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import { TextField, Typography } from "@mui/material";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 
 import MuiTextField from "@mui/material/TextField";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
@@ -15,6 +25,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import Collapse from "@mui/material/Collapse";
 import axios from "axios";
+import { Padding } from "@mui/icons-material";
 
 const MainHead = ({
   allOpenTabs,
@@ -30,9 +41,15 @@ const MainHead = ({
   responseData,
 }) => {
   const [open, setOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalMessage2, setModalMessage2] = useState("");
   const [setstoreJson, setSetstoreJson] = useState(null);
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   const refone = useRef(null);
+  const reftwo = useRef(null);
 
   const TextFieldDashed = React.forwardRef((props, ref) => (
     <MuiTextField
@@ -47,14 +64,19 @@ const MainHead = ({
       }}
     />
   ));
-
+  const handleClose = () => {
+    setModalOpen(false);
+  };
   const handleClick = () => {
     setOpen(!open);
   };
 
   useEffect(() => {
     let handler = (e) => {
-      if (!refone.current.contains(e.target)) {
+      if (
+        !reftwo.current.contains(e.target) &&
+        !refone.current.contains(e.target)
+      ) {
         setOpen(false);
       }
     };
@@ -63,18 +85,28 @@ const MainHead = ({
     return () => {
       document.removeEventListener("mousedown", handler);
     };
-  });
+  }, []);
 
   const handleStoreJson = () => {
     setSetstoreJson(allOpenTabs);
 
     if (!reportTitle) {
-      alert("Report Name in missing...!");
+      setModalOpen(true);
+      setModalMessage("Report name required.");
+      setModalMessage2("Report Name in missing. Please enter report name.");
       return;
     }
 
+    if (!queryjsonData) {
+      setModalOpen(true);
+      setModalMessage("Report required.");
+      setModalMessage2("Report Data in missing. Please select report.");
+      return;
+    }
     if (queryjsonData.length === 0) {
-      alert("Report Data in missing...!");
+      setModalOpen(true);
+      setModalMessage("Report required.");
+      setModalMessage2("Report Data in missing. Please select report.");
       return;
     }
     let data = JSON.stringify(queryjsonData);
@@ -123,7 +155,11 @@ const MainHead = ({
           (res) => {
             getSaveData();
             setReportTitle(null);
-            alert(res.data.message);
+            setModalOpen(true);
+            setModalMessage(res.data.message);
+            setModalMessage2(
+              "Report name already exist. Select different report name. "
+            );
           },
           (error) => {
             console.log(error);
@@ -134,7 +170,7 @@ const MainHead = ({
 
   const handleExport = () => {
     let queryjson = JSON.stringify(queryjsonData);
-    let per_page = 15
+    let per_page = 15;
     let page = pageNum;
 
     axios
@@ -171,9 +207,8 @@ const MainHead = ({
 
   const handleExportAll = () => {
     let queryjson = JSON.stringify(queryjsonData);
-    let per_page = 15*responseData.pages;
+    let per_page = 15 * responseData.pages;
     let page = responseData.pages;
-console.log("kldshvgjbh");
     axios
       .post(
         `https://staging.trainingpipeline.com/backend/web/report-generate/export-excel`,
@@ -359,8 +394,8 @@ console.log("kldshvgjbh");
           </ListItemButton>
           <Collapse
             in={open}
+            ref={reftwo}
             timeout="auto"
-            unmountOnExit
             sx={{
               color: "#ffffff",
               width: "100%",
@@ -384,19 +419,48 @@ console.log("kldshvgjbh");
               }}
             >
               <ListItemButton onClick={() => handleExport()}>
-                <ListItemText primary="Export"  />
-              </ListItemButton>
-              <ListItemButton onClick={() => handleExportAll()}>
-                <ListItemText
-                  primary="Export All"
-                  
-                />
+                <ListItemText primary="Export" />
               </ListItemButton>
             </List>
-          
+            <List
+              component="div"
+              disablePadding
+              sx={{
+                zIndex: 30,
+                bgcolor: "#2D9CE9",
+                "&:hover": {
+                  bgcolor: "#2D75D7",
+                },
+              }}
+            >
+              <ListItemButton onClick={() => handleExportAll()}>
+                <ListItemText primary="Export All" />
+              </ListItemButton>
+            </List>
           </Collapse>
         </List>
       </Box>
+      <Dialog
+        fullScreen={fullScreen}
+        open={modalOpen}
+        slotProps={{
+          backdrop: {
+            sx: { background: "rgba(255, 255, 255, 0.55)", boxShadow: 1 },
+          },
+        }}
+        onClose={() => handleClose()}
+        aria-labelledby="responsive-dialog-title"
+      >
+        <DialogTitle id="responsive-dialog-title">{modalMessage}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{modalMessage2}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={() => handleClose()}>
+            close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
