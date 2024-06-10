@@ -29,6 +29,9 @@ const ReportNavBar = ({
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalMessage2, setModalMessage2] = useState("");
+  const [clear, setClear] = useState(false);
+const [filteredReports, setFilteredReports] = useState([]);
+const [searchTerm, setSearchTerm] = useState("");
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -70,6 +73,26 @@ setModalOpen(false);
       );
   };
 
+  useEffect(() => {
+    setFilteredReports(saveReports)
+  }, [saveReports, searchTerm])
+  
+
+  const handleSearchChange = (e) =>{
+console.log("tt",e.target.value);
+setSearchTerm(e.target.value);
+  }
+
+  const handleSearch = () => {
+    const filtered = saveReports.filter(
+      (item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    console.log("99",filtered);
+    setFilteredReports(filtered);
+    // setClear(!clear);
+  };
+
   return (
     <Box
       display="flex"
@@ -92,7 +115,7 @@ setModalOpen(false);
           overflowX: "auto",
         }}
       >
-        {saveReports.map((item, i) => (
+        {filteredReports.map((item, i) => (
           <Box
             key={i}
             pl="8px"
@@ -169,6 +192,7 @@ setModalOpen(false);
         }}
       >
         <TextField
+        onChange={(e) => handleSearchChange(e)}
           id="outlined-basic"
           label="Search Report Name"
           variant="outlined"
@@ -180,7 +204,7 @@ setModalOpen(false);
             bgcolor: "#FFFFFF",
           }}
         />
-        <Button variant="contained">Search</Button>
+        <Button onClick={() => handleSearch()} variant="contained">Search</Button>
       </Box>
       <Dialog
         fullScreen={fullScreen}
