@@ -8,14 +8,14 @@ import { Button } from "@mui/material";
 const LeftSideBar = (props) => {
   return (
     <Box
-      width={260}
+      width={300}
       display="flex"
       alignItems="center"
       flexDirection="column"
       gap={2}
       noValidate
       autoComplete="off"
-      minWidth={260}
+      minWidth={300}
       sx={{ height: "100%", overflowX: "auto" }}
     >
       {/* <SearchTableInput /> */}
@@ -24,7 +24,13 @@ const LeftSideBar = (props) => {
           width: "100%",
         }}
       >
-        <Button variant="contained" onClick={() => props.fetchTableData()}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            props.fetchTableData();
+            props.resetreportTitle();
+          }}
+        >
           Reset
         </Button>
       </Box>
@@ -40,6 +46,7 @@ const LeftSideBar = (props) => {
         closeTab={props.closeTab}
         fetchTableData={props.fetchTableData}
         setSelectedColumn={props.setSelectedColumn}
+        setReportTitle={props.setReportTitle}
       />
     </Box>
   );

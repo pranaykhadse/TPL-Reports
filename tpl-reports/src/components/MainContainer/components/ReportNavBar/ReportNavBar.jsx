@@ -30,8 +30,8 @@ const ReportNavBar = ({
   const [modalMessage, setModalMessage] = useState("");
   const [modalMessage2, setModalMessage2] = useState("");
   const [clear, setClear] = useState(false);
-const [filteredReports, setFilteredReports] = useState([]);
-const [searchTerm, setSearchTerm] = useState("");
+  const [filteredReports, setFilteredReports] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -41,9 +41,9 @@ const [searchTerm, setSearchTerm] = useState("");
     setOpen(false);
   };
 
-  const handleClose2 = () =>{
-setModalOpen(false);
-  }
+  const handleClose2 = () => {
+    setModalOpen(false);
+  };
 
   const handleDelete = (id) => {
     axios
@@ -74,23 +74,25 @@ setModalOpen(false);
   };
 
   useEffect(() => {
-    setFilteredReports(saveReports)
-  }, [saveReports, searchTerm])
-  
+    setFilteredReports(saveReports);
+  }, [saveReports, searchTerm]);
 
-  const handleSearchChange = (e) =>{
-console.log("tt",e.target.value);
-setSearchTerm(e.target.value);
-  }
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
   const handleSearch = () => {
-    const filtered = saveReports.filter(
-      (item) =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = saveReports.filter((item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    console.log("99",filtered);
     setFilteredReports(filtered);
-    // setClear(!clear);
+    setClear(!clear);
+  };
+
+  const onClear = () => {
+    setSearchTerm("");
+    setFilteredReports(saveReports);
+    setClear(false);
   };
 
   return (
@@ -156,7 +158,7 @@ setSearchTerm(e.target.value);
               open={open}
               slotProps={{
                 backdrop: {
-                  sx: { background: "rgba(255, 255, 255, 0.25)", boxShadow: 1 },
+                  sx: { background: "rgba(255, 255, 255, 0.55)", boxShadow: 1 },
                 },
               }}
               onClose={() => handleClose()}
@@ -191,27 +193,63 @@ setSearchTerm(e.target.value);
           alignItems: "center",
         }}
       >
+        <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "auto",
+          minWidth: "180px",
+          borderRadius: 1,
+          bgcolor: "#FFFFFF",
+
+          position: "relative",
+        }}>
         <TextField
-        onChange={(e) => handleSearchChange(e)}
+          onChange={(e) => handleSearchChange(e)}
           id="outlined-basic"
           label="Search Report Name"
           variant="outlined"
           size="small"
+          value={searchTerm}
           sx={{
-            width: "auto",
-            minWidth: "180px",
-            borderRadius: 1,
+            
+            width: "100%",
+            border: 0,
             bgcolor: "#FFFFFF",
+            borderRadius: 1,
+            "& .MuiInputBase-input": {
+              paddingRight: "26px",
+            },
           }}
-        />
-        <Button onClick={() => handleSearch()} variant="contained">Search</Button>
+        >
+          {" "}
+          
+        </TextField>
+        {searchTerm.length > 0 ?<CancelIcon
+            sx={{
+              position: "absolute",
+              top: "1/2",
+              right: 3,
+              height: "20px",
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              onClear();
+            }}
+          /> : null}
+        </Box>
+        <Button onClick={() => handleSearch()} variant="contained">
+          Search
+        </Button>
       </Box>
       <Dialog
         fullScreen={fullScreen}
         open={modalOpen}
         slotProps={{
           backdrop: {
-            sx: { background: "rgba(255, 255, 255, 0.55)", boxShadow: 1 },
+            sx: { background: "rgba(255, 255, 255, 1)", boxShadow: 1 },
           },
         }}
         onClose={() => handleClose2()}

@@ -18,7 +18,13 @@ const DraggableCard = ({
   const [count, setCount] = useState(false);
 
 
-
+const resetSumCount = (index, table, column) => {
+  let tmpFilter = [...tables];
+      tmpFilter[index]["sum"][0] = [];
+      tmpFilter[index]["count"][0] =[]
+      setTables(tmpFilter);
+      handleSelectColumn();
+}
   
 
 
@@ -44,6 +50,7 @@ const DraggableCard = ({
         tempSelectArr.push(table + ":::" + column);
       }
       tmpFilter[index]["sum"][0] = tempSelectArr;
+      tmpFilter[index]["count"][0] =[]
       setTables(tmpFilter);
       handleSelectColumn();
       // buildQueryJSON();
@@ -53,6 +60,7 @@ const DraggableCard = ({
       tempSelectArr.push(table + ":::" + column);
 
       tmpFilter[index]["sum"][0] = tempSelectArr;
+      tmpFilter[index]["count"][0] =[];
       setTables(tmpFilter);
       handleSelectColumn();
       // buildQueryJSON();
@@ -78,6 +86,7 @@ const DraggableCard = ({
         tempSelectArr.push(table + ":::" + column);
       }
       tmpFilter[index]["count"][0] = tempSelectArr;
+      tmpFilter[index]["sum"][0] =[]
       setTables(tmpFilter);
       handleSelectColumn();
       // buildQueryJSON();
@@ -87,6 +96,7 @@ const DraggableCard = ({
       tempSelectArr.push(table + ":::" + column);
 
       tmpFilter[index]["count"][0] = tempSelectArr;
+      tmpFilter[index]["sum"][0] =[]
       setTables(tmpFilter);
       handleSelectColumn();
       // buildQueryJSON();
@@ -94,28 +104,48 @@ const DraggableCard = ({
   };
 
   return (
+    // <Box
+    //   width="auto"
+    //   minWidth="fit-content"
+    //   display="flex"
+    //   flexDirection="column"
+    //   sx={{
+    //     borderRadius: 1,
+    //     border: "1px solid grey",
+    //     height: "fit-content",
+    //   }}
+    //   ref={provided.innerRef}
+    //   {...provided.draggableProps}
+    //   {...provided.dragHandleProps}
+    // >
+    //   <CardHead
+    //     tab={tab}
+    //     closeTab={closeTab}
+    //     handleSumChange={handleSumChange}
+    //     handleCountChange={handleCountChange}
+    //   />
+    //   <ListBody openTabData={openTabData} tab={tab} respSelectedColumn={respSelectedColumn} sum={sum} count={count}/>
+    // </Box>
     <Box
-      width="auto"
-      minWidth="fit-content"
-      display="flex"
-      flexDirection="column"
-      sx={{
-        borderRadius: 1,
-        border: "1px solid grey",
-        height: "fit-content",
-      }}
-      ref={provided.innerRef}
-      {...provided.draggableProps}
-      {...provided.dragHandleProps}
-    >
-      <CardHead
-        tab={tab}
-        closeTab={closeTab}
-        handleSumChange={handleSumChange}
-        handleCountChange={handleCountChange}
-      />
-      <ListBody openTabData={openTabData} tab={tab} respSelectedColumn={respSelectedColumn} sum={sum} count={count}/>
-    </Box>
+    width="auto"
+    minWidth="fit-content"
+    display="flex"
+    flexDirection="column"
+    sx={{
+      borderRadius: 1,
+      border: "1px solid grey",
+      height: "fit-content",
+    }}
+  >
+    <CardHead
+      tab={tab}
+      closeTab={closeTab}
+      handleSumChange={handleSumChange}
+      handleCountChange={handleCountChange}
+      resetSumCount={resetSumCount}
+    />
+    <ListBody openTabData={openTabData} tab={tab} respSelectedColumn={respSelectedColumn} sum={sum} count={count}/>
+  </Box>
   );
 };
 

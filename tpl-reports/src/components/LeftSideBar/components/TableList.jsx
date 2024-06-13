@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -18,7 +18,16 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import axios from "axios";
-import { Chip, OutlinedInput, useTheme } from "@mui/material";
+import {
+  Autocomplete,
+  Chip,
+  InputAdornment,
+  ListSubheader,
+  OutlinedInput,
+  TextField,
+  useTheme,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -51,11 +60,16 @@ const TableList = ({
   closeTab,
   selectedColumn,
   fetchTableData,
-  setSelectedColumn
+  setSelectedColumn,
+  setReportTitle,
 }) => {
   const [selected, setSelected] = useState([]);
   const [open, setOpen] = useState(false);
-
+  const [searchText, setSearchText] = useState("");
+  const [menuItem, setMenuItem] = useState([]);
+  const [autoCompleteOpen, setAutoCompleteOpen] = useState(false);
+  const [autoCompleteText, setAutoCompleteText] = useState("");
+  const [inputValue, setInputValue] = useState(null);
   const theme = useTheme();
 
   const addLine = (event, index) => {
@@ -71,18 +85,18 @@ const TableList = ({
           col: [[], []],
           sum: [[]],
           count: [[]],
-        }
+        },
       ];
-    }else{
-      if(typeof tables[index + 1] === 'undefined') {
+    } else {
+      if (typeof tables[index + 1] === "undefined") {
         // does not exist
-       
+
         tmpFilter = [...tables];
-      }else {
+      } else {
         // does exist
         tmpFilter = [...tables];
         tmpFilter.length = index + 1;
-    }
+      }
     }
 
     tmpFilter[index]["tbl"] = event.target.value;
@@ -97,7 +111,7 @@ const TableList = ({
     return tmpFilter;
   };
 
-  const filterAddedArray = (tbl,relTables, resp) => {
+  const filterAddedArray = (tbl, relTables, resp) => {
     let arr1 = [...relTables];
     let arr2 = [...resp];
     let allArr = arr1.concat(arr2);
@@ -106,14 +120,13 @@ const TableList = ({
     });
 
     return uniqueFinalArray.filter((el) => el != tbl);
-
   };
 
   const handleTableChange = async (event, index) => {
-    // if (index === 0) {
-    //   console.log("test");
-    //   fetchTableData()
-    // }
+
+    setReportTitle(null);
+
+    setInputValue(event.target.value);
     let tmpFilter = addLine(event, index);
     await axios
       .get(
@@ -152,23 +165,24 @@ const TableList = ({
                 resp.data !== undefined &&
                 resp.data.length > 0
               ) {
-            
-                if (tables.length> 1) {
+                if (tables.length > 1) {
                   let arr = filterAddedArray(
                     tmpFilter[index].tbl,
                     tmpFilter[index]["related"],
                     resp.data
                   );
                   relatedData3.push(...arr);
-                }else{
+                } else {
                   relatedData3.push(...resp.data);
                 }
                 relatedData1.push(...resp.data);
                 relatedData2.push(...resp.data);
               }
               tmpFilter[index]["related"] = Array.from(new Set(relatedData1));
-              tmpFilter[index+ 1]["relatedShow"] = Array.from(new Set(relatedData3));
-              
+              tmpFilter[index + 1]["relatedShow"] = Array.from(
+                new Set(relatedData3)
+              );
+
               tmpFilter[index + 1]["related"] = Array.from(
                 new Set(relatedData2)
               );
@@ -180,10 +194,10 @@ const TableList = ({
           console.log(error);
         }
       );
-
   };
 
   const handleColumnChange = (value, index) => {
+    setReportTitle(null);
     let tmpFilter = [...tables];
     let tempSelectArr = [...tables[index]["col"][0]];
     tempSelectArr.push(value);
@@ -202,39 +216,85 @@ const TableList = ({
       const updatedArr = selectedArr.filter((item) => item != e);
       setSelected([...updatedArr]);
     }
-    // if (allOpenTabs2.length === 0) {
-    //   if (!selected.includes(e)) {
-    //     setSelected([e]);
-    //   } else {
-    //     setSelected([]);
-    //   }
-    // }
   };
 
-  // useEffect(() => {
-  //   if (allOpenTabs2.length !== 0) {
-  //     setSelected(allOpenTabs2[0].show_type.name);
-  //   }
-  // }, [allOpenTabs2]);
+  const handleText = (event) => {
+    setAutoCompleteText(event?.target?.value);
+  };
 
   const SearchFields = ({ item, i }) => {
+
+
+    const [searchText, setSearchText] = useState("");
+    const containsText = (text, searchText) =>
+      text.toLowerCase().indexOf(searchText.toLowerCase()) > -1;
+
+    const displayedOptions = useMemo(
+      () =>
+        item.relatedShow.filter((option) => containsText(option, searchText)),
+      [searchText]
+    );
+
+
     return (
       item.relatedShow.length != 0 && (
         <>
           <Box sx={{ minWidth: "100%", height: "fit-content" }}>
             <FormControl fullWidth>
+              {/* <Autocomplete
+              disablePortal
+              id={"combo-box-demo-"+i}
+              
+              value={item.tbl}
+              sx={{ width: 300 }}
+              onChange={(event, newValue) => {
+                handleTableChange(newValue, i)
+              }}
+              inputValue={item.tbl}
+              onInputChange={(event, newInputValue) => {
+                // console.log("1992",newInputValue,"==", event.target.value );
+                setAutoCompleteText(newInputValue)
+              }}
+              options={item?.relatedShow}
+              renderInput={(params) => <TextField {...params} label="Tables" />}
+            /> */}
               <InputLabel id="demo-simple-select-label">Tables</InputLabel>
               <Select
-                labelId="demo-multiple-chip-label"
-                id="demo-multiple-chip"
+                MenuProps={{ autoFocus: false }}
+                labelId="search-select-label"
+                id={"search-select" + i}
                 value={item.tbl}
-                label="Tables"
+                label="Options"
                 onChange={(value) => handleTableChange(value, i)}
-                // onClick={() => console.log("vbdvjb")}
+                onClose={() => setSearchText("")}
+                renderValue={() => item.tbl}
               >
-                {item.relatedShow.map((table, index) => (
-                  <MenuItem key={index} value={table}>
-                    {table}
+                <ListSubheader>
+                  <TextField
+                    size="small"
+                    // Autofocus on textfield
+                    autoFocus
+                    placeholder="Type to search..."
+                    fullWidth
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key !== "Escape") {
+                        // Prevents autoselecting item while typing (default Select behaviour)
+                        e.stopPropagation();
+                      }
+                    }}
+                  />
+                </ListSubheader>
+                {displayedOptions.map((option, i) => (
+                  <MenuItem key={i} value={option}>
+                    {option}
                   </MenuItem>
                 ))}
               </Select>
@@ -271,7 +331,7 @@ const TableList = ({
           </Select>
         </FormControl>
       </Box> */}
-    
+
           {item.col[1].length != 0 && (
             <Box key={i} width="100%">
               <ListItemButton
@@ -300,8 +360,8 @@ const TableList = ({
               >
                 {item?.col[1].map((col, index) => (
                   <List
-                    draggable
-                    onDragStart={() => dragStart(item.tbl, col.name, i)}
+                    // draggable
+                    // onDragStart={() => dragStart(item.tbl, col.name, i)}
                     key={col.name + "-" + index}
                     component="div"
                     disablePadding

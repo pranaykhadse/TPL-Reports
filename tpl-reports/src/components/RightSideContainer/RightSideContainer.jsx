@@ -21,9 +21,6 @@ const RightSideContainer = ({
   handleSelectColumn,
   respSelectedColumn,
 }) => {
-
- 
-
   const handleDragEnd = (results) => {
     let tempuser = [...allOpenTabs2];
     if (results.destination) {
@@ -34,48 +31,77 @@ const RightSideContainer = ({
   };
 
   return (
-    <DragDropContext onDragEnd={(results) => handleDragEnd(results)}>
-      <Droppable droppableId="Box-1" direction="horizontal">
-        {(provided) => (
-          <Box
-            display="flex"
-            gap={0}
-            px={0.5}
-            flexDirection="row"
-            sx={{ flexGrow: 1, height: "100%", overflowX: "auto" }}
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-          >
-            <DropableArea onDrop={() => onDrop(0)} handleDropStatus={handleDropStatus}/> 
-            {selectedColumn.map((tab, i) => (
-              <Draggable
-                draggableId={tab.column}
-                index={i}
-                key={tab.column+"-"+i}
-              >
-                {(provided) => (
-                  <React.Fragment>
-                  <DraggableCard
-                    provided={provided}
-                    tab={tab}
-                    openTabData={openTabData}
-                    closeTab={closeTab}
-                    tables={tables}
-                    setTables={setTables}
-                    handleSelectColumn={handleSelectColumn}
-                    respSelectedColumn={respSelectedColumn}
-                  />
-                   <DropableArea onDrop={() => onDrop(i + 1)} handleDropStatus={handleDropStatus} /> 
-                  </React.Fragment>
-                )}
-              </Draggable>
-            ))}
-            {provided.placeholder}
-            <DropableArea onDrop={() => onDrop("end")} handleDropStatus={handleDropStatus} flexGrow={1}/> 
-          </Box>
-        )}
-      </Droppable>
-    </DragDropContext>
+    <Box
+      display="flex"
+      gap={0}
+      px={0.5}
+      flexDirection="row"
+      sx={{ flexGrow: 1, height: "100%", overflowX: "auto" }}
+    >
+      {selectedColumn.map((tab, i) => (
+        <DraggableCard
+          key={tab.column + "-" + i}
+          tab={tab}
+          openTabData={openTabData}
+          closeTab={closeTab}
+          tables={tables}
+          setTables={setTables}
+          handleSelectColumn={handleSelectColumn}
+          respSelectedColumn={respSelectedColumn}
+        />
+      ))}
+    </Box>
+    // <DragDropContext onDragEnd={(results) => handleDragEnd(results)}>
+    //   <Droppable droppableId="Box-1" direction="horizontal">
+    //     {(provided) => (
+    //       <Box
+    //         display="flex"
+    //         gap={0}
+    //         px={0.5}
+    //         flexDirection="row"
+    //         sx={{ flexGrow: 1, height: "100%", overflowX: "auto" }}
+    //         ref={provided.innerRef}
+    //         {...provided.droppableProps}
+    //       >
+    //         {/* <DropableArea onDrop={() => onDrop(0)} handleDropStatus={handleDropStatus}/>  */}
+    //         {selectedColumn.map((tab, i) => (
+    //           // <Draggable
+    //           //   draggableId={tab.column}
+    //           //   index={i}
+    //           //   key={tab.column+"-"+i}
+    //           // >
+    //           //   {(provided) => (
+    //           //     <React.Fragment>
+    //           //     <DraggableCard
+    //           //       provided={provided}
+    //           //       tab={tab}
+    //           //       openTabData={openTabData}
+    //           //       closeTab={closeTab}
+    //           //       tables={tables}
+    //           //       setTables={setTables}
+    //           //       handleSelectColumn={handleSelectColumn}
+    //           //       respSelectedColumn={respSelectedColumn}
+    //           //     />
+    //           //      <DropableArea onDrop={() => onDrop(i + 1)} handleDropStatus={handleDropStatus} />
+    //           //     </React.Fragment>
+    //           //   )}
+    //           // </Draggable>
+    //           <DraggableCard
+    //           key={tab.column+"-"+i}
+    //             provided={provided}
+    //             tab={tab}
+    //             openTabData={openTabData}
+    //             closeTab={closeTab}
+    //             tables={tables}
+    //             setTables={setTables}
+    //             handleSelectColumn={handleSelectColumn}
+    //             respSelectedColumn={respSelectedColumn}
+    //           />
+    //         ))}
+    //       </Box>
+    //     )}
+    //   </Droppable>
+    // </DragDropContext>
   );
 };
 

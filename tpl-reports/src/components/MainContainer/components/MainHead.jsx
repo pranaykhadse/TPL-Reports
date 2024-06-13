@@ -44,7 +44,7 @@ const MainHead = ({
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalMessage2, setModalMessage2] = useState("");
-  const [setstoreJson, setSetstoreJson] = useState(null);
+
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -88,7 +88,7 @@ const MainHead = ({
   }, []);
 
   const handleStoreJson = () => {
-    setSetstoreJson(allOpenTabs);
+
 
     if (!reportTitle) {
       setModalOpen(true);
@@ -154,12 +154,25 @@ const MainHead = ({
         .then(
           (res) => {
             getSaveData();
-            setReportTitle(null);
             setModalOpen(true);
             setModalMessage(res.data.message);
-            setModalMessage2(
-              "Report name already exist. Select different report name. "
-            );
+            if (res.data.status == "error") {
+              setModalMessage2(
+                "Report name already exist. Select different report name. "
+              );
+              
+            }else if (res.data.status == "success") {
+              setModalMessage2(
+                "Report has been saved successfully...! "
+              );
+            setReportTitle(null);
+
+            }else{
+              setModalMessage2(
+                "Something went wrong ..!"
+              );
+            }
+            
           },
           (error) => {
             console.log(error);

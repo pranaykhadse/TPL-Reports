@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import Box from "@mui/material/Box";
 import CloseIcon from "@mui/icons-material/Close";
 import ControlCameraSharpIcon from "@mui/icons-material/ControlCameraSharp";
 import {
+  Button,
   Checkbox,
   FormControl,
   FormControlLabel,
@@ -28,29 +29,61 @@ const style = {
   p: 4,
 };
 
-const CardHead = ({ tab, closeTab, handleSumChange, handleCountChange }) => {
+const CardHead = ({
+  tab,
+  closeTab,
+  handleSumChange,
+  handleCountChange,
+  resetSumCount,
+}) => {
   const [value, setValue] = React.useState(null);
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const handleRadioChange= (e) => {
+  const refone = useRef(null);
+  const reftwo = useRef(null);
+
+  const handleRadioChange = (e) => {
+    if (e == "reset") {
+      setValue(null);
+      resetSumCount(tab.index, tab.table, tab.column);
+      return;
+    }
+
     setValue(e.target.value);
     if (e.target.value == "sum") {
-      handleSumChange( tab.index, tab.table, tab.column)
+      handleSumChange(tab.index, tab.table, tab.column);
     } else if (e.target.value == "count") {
-      handleCountChange( tab.index, tab.table, tab.column)
-      
-    } 
-  }
+      handleCountChange(tab.index, tab.table, tab.column);
+    }
+  };
+
+  useEffect(() => {
+    let handler = (e) => {
+      if (reftwo.current != null) {
+        if (
+          !reftwo.current.contains(e.target) &&
+          !refone.current.contains(e.target)
+        ) {
+          setOpen(false);
+        }
+      }
+    };
+    document.addEventListener("mousedown", handler);
+
+    return () => {
+      document.removeEventListener("mousedown", handler);
+    };
+  }, []);
 
   return (
     <Box
-      height={145}
+      height="fit-content"
       display="flex"
       flexDirection="column"
       px={1.5}
-      pt={1}
+      py={1}
       sx={{
         position: "relative",
         width: "auto",
@@ -88,7 +121,7 @@ const CardHead = ({ tab, closeTab, handleSumChange, handleCountChange }) => {
       <Box
         height={30}
         display="flex"
-        py={2}
+        py={1}
         sx={{
           width: "100%",
           borderRadius: 1,
@@ -98,13 +131,14 @@ const CardHead = ({ tab, closeTab, handleSumChange, handleCountChange }) => {
           {tab.column}
         </Typography>
         <ModeIcon
+          ref={refone}
           onClick={open ? handleClose : handleOpen}
           sx={{
             height: "20px",
           }}
         />
       </Box>
-      <Box>
+      {/* <Box>
         <TextField
           id="outlined-basic"
           variant="outlined"
@@ -115,7 +149,7 @@ const CardHead = ({ tab, closeTab, handleSumChange, handleCountChange }) => {
             },
           }}
         />
-      </Box>
+      </Box> */}
       {/* <Modal
         open={open}
         onClose={handleClose}
@@ -133,6 +167,7 @@ const CardHead = ({ tab, closeTab, handleSumChange, handleCountChange }) => {
       </Modal> */}
       {open && (
         <Box
+          ref={reftwo}
           boxSizing="border-box"
           height="fit-content"
           width="90%"
@@ -149,8 +184,8 @@ const CardHead = ({ tab, closeTab, handleSumChange, handleCountChange }) => {
           }}
         >
           <FormControl>
-            <FormLabel id="demo-radio-buttons-group-label">Gender</FormLabel>
             <RadioGroup
+              row
               aria-labelledby="demo-radio-buttons-group-label"
               defaultValue="female"
               name="radio-buttons-group"
@@ -158,8 +193,31 @@ const CardHead = ({ tab, closeTab, handleSumChange, handleCountChange }) => {
               onChange={handleRadioChange}
             >
               <FormControlLabel value="sum" control={<Radio />} label="Sum" />
-              <FormControlLabel value="count" control={<Radio />} label="Count" />
+              <FormControlLabel
+                value="count"
+                control={<Radio />}
+                label="Count"
+              />
             </RadioGroup>
+            <Box
+              sx={{
+                width: "100%",
+                marginBottom: 1,
+              }}
+            >
+              <Typography
+                sx={{
+                  paddingX: 1,
+                  paddingTop: 1,
+                  bgcolor: "white",
+                  color: "gray",
+                  cursor: "pointer",
+                }}
+                onClick={() => handleRadioChange("reset")}
+              >
+                RESET
+              </Typography>
+            </Box>
           </FormControl>
           {/* <FormGroup>
             <FormControlLabel

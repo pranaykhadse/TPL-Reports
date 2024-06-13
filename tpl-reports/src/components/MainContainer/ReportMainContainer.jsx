@@ -99,7 +99,6 @@ const ReportMainContainer = () => {
     };
     postQueryJson(queryjson);
     setQueryjson(queryjson);
-
     setSelectedColumn(tmpFilter);
   };
 
@@ -127,24 +126,204 @@ const ReportMainContainer = () => {
     return tmpFilter;
   }
 
-  const buildQueryJSON = () => {};
+  const filterAddedArray = (tbl, relTables, resp) => {
+    let arr1 = [...relTables];
+    let arr2 = [...resp];
+    let allArr = arr1.concat(arr2);
+    let uniqueFinalArray = allArr.filter(function (item, pos) {
+      return allArr.indexOf(item) == pos;
+    });
 
-  const handleSavedReport = (e) => {
+    return uniqueFinalArray.filter((el) => el != tbl);
+  };
+
+  const buildQueryJSON = () => {};
+  const buildTableJson = async (tbl, i) => {
+    let tmpFilter = [];
+    // let tmpFilter = addLine(event, index);
+    let relateShowArr = tables[0].relatedShow;
+    setSelectedColumn([]);
+    tmpFilter[i] = {
+      tbl: tbl.tbl,
+      related: [],
+      relatedShow: relateShowArr,
+      col: [[], []],
+      sum: [[]],
+      count: [[]],
+    };
+
+    tmpFilter[i + 1] = {
+      tbl: "",
+      related: [],
+      relatedShow: [],
+      col: [[], []],
+      sum: [[]],
+      count: [[]],
+    };
+    await axios
+      .get(
+        `https://staging.trainingpipeline.com/backend/web/mii/applicant/columns?table=${tbl.tbl}`,
+        {
+          headers: {
+            accept: "application/json",
+          },
+        }
+      )
+      .then((res) => {
+        if (res.data.data !== undefined) {
+          let columnData = Object.values(res.data.data);
+          tmpFilter[i]["col"][1] = columnData;
+        }
+
+        return tmpFilter;
+      })
+      .then(
+        (tmpFilter) => {
+          axios
+            .get(
+              `https://staging.trainingpipeline.com/backend/web/mii/applicant/relations?tableName=${tbl.tbl}`,
+              {
+                headers: {
+                  accept: "application/json",
+                },
+              }
+            )
+            .then((resp) => {
+              let relatedData1 = [];
+              let relatedData2 = [];
+              let relatedData3 = [];
+              if (
+                resp.data !== null &&
+                resp.data !== undefined &&
+                resp.data.length > 0
+              ) {
+                if (tables.length > 1) {
+                  let arr = filterAddedArray(
+                    tmpFilter[i].tbl,
+                    tmpFilter[i]["related"],
+                    resp.data
+                  );
+                  relatedData3.push(...arr);
+                } else {
+                  relatedData3.push(...resp.data);
+                }
+                relatedData1.push(...resp.data);
+                relatedData2.push(...resp.data);
+              }
+              tmpFilter[i]["related"] = Array.from(new Set(relatedData1));
+              tmpFilter[i + 1]["relatedShow"] = Array.from(
+                new Set(relatedData3)
+              );
+
+              tmpFilter[i + 1]["related"] = Array.from(new Set(relatedData2));
+
+   
+            });
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+  };
+// console.log("0443",tables);
+  const handleSavedReport = async (e) => {
+    // fetchTableData();
     setReportTitle(e.name);
     postQueryJson(JSON.parse(e.fields_json));
     setQueryjson(JSON.parse(e.fields_json));
+    let fieldjson = JSON.parse(e.fields_json).table_Data;
     let fields = JSON.parse(e.fields_json).reportfields;
-    let tmpFilter = [];
-    fields.map((item, i) => [
-      tmpFilter.push({
-        table: item.split(":::")[0],
-        column: item.split(":::")[1],
-        index: null,
-        sum: [],
-        count: [],
-      }),
-    ]);
-    setSelectedColumn(tmpFilter);
+    let sumFields = JSON.parse(e.fields_json).sum;
+    let countFields = JSON.parse(e.fields_json).count;
+    console.log("044",sumFields);
+    let tmpFilter2 = [];
+    const newElement = [];
+    fieldjson.map(async (tbl, i) => {
+      let selectedCol = [];
+      let selectedSum = [];
+      let selectedCount = [];
+      fields.map((item, i) =>
+        item.split(":::")[0] == tbl.tbl
+          ? selectedCol.push(item.split(":::")[1])
+          : null
+      );
+      sumFields.map((item, i) =>
+        item.split(":::")[0] == tbl.tbl
+          ? selectedSum.push(item)
+          : null
+      );
+      countFields.map((item, i) =>
+        item.split(":::")[0] == tbl.tbl
+          ? selectedCount.push(item)
+          : null
+      );
+      let tmpFilter = [];
+      let relateShowArr = tables[0].relatedShow;
+      let col = [];
+      await axios
+        .get(
+          `https://staging.trainingpipeline.com/backend/web/mii/applicant/columns?table=${tbl.tbl}`,
+          {
+            headers: {
+              accept: "application/json",
+            },
+          }
+        )
+        .then((res) => {
+          if (res.data.data !== undefined) {
+            let columnData = Object.values(res.data.data);
+            col = [...columnData];
+          }
+        });
+
+      if (i == 0) {
+        tmpFilter[i] = {
+          tbl: tbl.tbl,
+          related: tbl.related,
+          relatedShow: relateShowArr,
+          col: [[...selectedCol], [...col]],
+          sum: [[...sumFields]],
+          count: [[...selectedCount]],
+        };
+      } else {
+        tmpFilter[i] = {
+          tbl: tbl.tbl,
+          related: tbl.related,
+          relatedShow: fieldjson[i - 1].related,
+          col: [[...selectedCol], [...col]],
+          sum: [[...sumFields]],
+          count: [[...selectedCount]],
+        };
+      }
+      var sortedArray = [];
+      for (var i = 0; i < fieldjson.length; i++) {
+        var found = false;
+        sortedArray.push(fieldjson[i].tbl);
+      }
+      let temp3 = tmpFilter.filter((item) => item != undefined);
+      tmpFilter2 = [...tmpFilter2, ...temp3].sort(
+        (a, b) => sortedArray.indexOf(a.tbl) - sortedArray.indexOf(b.tbl)
+      );
+
+      setTables(tmpFilter2);
+      handleSelectColumn();
+      let tmpFilterSelectedCol = [];
+      tmpFilter2.map((item, i) => {
+        item.col[0].map((col) => {
+          tmpFilterSelectedCol.push({
+            table: item.tbl,
+            column: col,
+            index: i,
+            sum: filterSum(item.sum[0], col),
+            count: filterCount(item.count[0], col),
+          });
+        });
+      });
+      console.log("0441",tmpFilter2);
+      setSelectedColumn(tmpFilterSelectedCol);
+    });
+
+    // console.log("04",fieldjson);
     // let tmpReportField = [];
     // let tmpSumField = [];
     // let tmpCountField = [];
@@ -228,9 +407,9 @@ const ReportMainContainer = () => {
     // setTable(tbl);
     // setColumn(col);
     // setIndexOfEl(index);
-    console.log(tbl);
-    console.log(col);
-    console.log(index);
+    // console.log(tbl);
+    // console.log(col);
+    // console.log(index);
     // setType(type);
     // settitle(title);
     // setMainType(show_type);
@@ -345,9 +524,9 @@ const ReportMainContainer = () => {
 
   const handleRightTab = (table, column, indexOfEl) => {
     if (selectedColumn.length == 0) {
-      console.log("1", table);
-      console.log("2", column);
-      console.log("3", indexOfEl);
+      // console.log("1", table);
+      // console.log("2", column);
+      // console.log("3", indexOfEl);
     }
     // let custom_column;
     // if (
@@ -562,9 +741,10 @@ const ReportMainContainer = () => {
         }
       );
   };
-  useEffect(() => {
-    fetchTableData();
-  }, []);
+
+  const resetreportTitle = () => {
+    setReportTitle(null);
+  };
 
   // useEffect(() => {
   //   fetchData();
@@ -622,6 +802,7 @@ const ReportMainContainer = () => {
   };
 
   useEffect(() => {
+    fetchTableData();
     getSaveData();
   }, []);
 
@@ -677,6 +858,8 @@ const ReportMainContainer = () => {
           handleSelectColumn={handleSelectColumn}
           closeTab={closeTab}
           fetchTableData={fetchTableData}
+          setReportTitle={setReportTitle}
+          resetreportTitle={resetreportTitle}
         />
         <RightSideContainer
           allOpenTabs={allOpenTabs}
