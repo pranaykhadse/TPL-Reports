@@ -38,7 +38,16 @@ const CardHead = ({
 }) => {
   const [value, setValue] = React.useState(null);
   const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
+  const handleOpen = () => {
+    if (tab.sum) {
+      setValue("sum");
+    } else if (tab.count) {
+      setValue("count");
+    } else {
+      setValue(null);
+    }
+    setOpen(true);
+  };
   const handleClose = () => setOpen(false);
 
   const refone = useRef(null);
@@ -130,13 +139,13 @@ const CardHead = ({
         <Typography variant="p" component="p" pr={1}>
           {tab.column}
         </Typography>
-        <ModeIcon
+        {/* <ModeIcon
           ref={refone}
           onClick={open ? handleClose : handleOpen}
           sx={{
             height: "20px",
           }}
-        />
+        /> */}
       </Box>
       {/* <Box>
         <TextField

@@ -64,7 +64,7 @@ const ReportNavBar = ({
             handleClose();
             getSaveData();
             setModalOpen(true);
-            setModalMessage(res.data.message);
+            setModalMessage("Report has been "+res.data.message);
           }
         },
         (error) => {
@@ -82,6 +82,10 @@ const ReportNavBar = ({
   };
 
   const handleSearch = () => {
+    if (searchTerm.length == 0) {
+      setModalOpen(true);
+      setModalMessage("Report name cannot be empty. Enter report name.");
+    }
     const filtered = saveReports.filter((item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -117,7 +121,7 @@ const ReportNavBar = ({
           overflowX: "auto",
         }}
       >
-        {filteredReports.map((item, i) => (
+        {filteredReports.length > 0 ? filteredReports.map((item, i) => (
           <Box
             key={i}
             pl="8px"
@@ -182,7 +186,9 @@ const ReportNavBar = ({
               </DialogActions>
             </Dialog>
           </Box>
-        ))}
+        )) : <Typography sx={{
+          color: "gray"
+        }}>No data found</Typography>}
       </Box>
       <Box
         display="flex"
@@ -249,7 +255,7 @@ const ReportNavBar = ({
         open={modalOpen}
         slotProps={{
           backdrop: {
-            sx: { background: "rgba(255, 255, 255, 1)", boxShadow: 1 },
+            sx: { background: "rgba(255, 255, 255, 0.5)", boxShadow: 1 },
           },
         }}
         onClose={() => handleClose2()}

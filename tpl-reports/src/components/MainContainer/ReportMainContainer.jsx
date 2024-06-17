@@ -49,16 +49,18 @@ const ReportMainContainer = () => {
   const [respSelectedColumn, setRespSelectedColumn] = useState([]);
   const navigate = useNavigate();
 
-  const filterSum = (sums, col) => {
-    if (sums.filter((item) => item.split(":::")[1] == col).length > 0) {
+  const filterSum = (sums, col, tbl) => {
+    console.log("23231",sums,"===",col);
+    if (sums.filter((item) => item.split(":::")[0] == tbl && item.split(":::")[1] == col).length > 0) {
       return true;
     } else {
       return false;
     }
   };
 
-  const filterCount = (counts, col) => {
-    if (counts.filter((item) => item.split(":::")[1] == col).length > 0) {
+  const filterCount = (counts, col, tbl) => {
+    console.log("23232",counts,"===",col);
+    if (counts.filter((item) => item.split(":::")[0] == tbl && item.split(":::")[1] == col).length > 0) {
       return true;
     } else {
       return false;
@@ -228,6 +230,7 @@ const ReportMainContainer = () => {
 // console.log("0443",tables);
   const handleSavedReport = async (e) => {
     // fetchTableData();
+    setSelectedColumn([]);
     setReportTitle(e.name);
     postQueryJson(JSON.parse(e.fields_json));
     setQueryjson(JSON.parse(e.fields_json));
@@ -314,12 +317,12 @@ const ReportMainContainer = () => {
             table: item.tbl,
             column: col,
             index: i,
-            sum: filterSum(item.sum[0], col),
-            count: filterCount(item.count[0], col),
+            sum: filterSum(item.sum[0], col,item.tbl),
+            count: filterCount(item.count[0], col,item.tbl),
           });
         });
       });
-      console.log("0441",tmpFilter2);
+     
       setSelectedColumn(tmpFilterSelectedCol);
     });
 
