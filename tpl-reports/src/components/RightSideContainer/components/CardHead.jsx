@@ -39,13 +39,13 @@ const CardHead = ({
   const [value, setValue] = React.useState(null);
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => {
-    if (tab.sum) {
-      setValue("sum");
-    } else if (tab.count) {
-      setValue("count");
-    } else {
-      setValue(null);
-    }
+    // if (tab.sum) {
+    //   setValue("sum");
+    // } else if (tab.count) {
+    //   setValue("count");
+    // } else {
+    //   setValue(null);
+    // }
     setOpen(true);
   };
   const handleClose = () => setOpen(false);

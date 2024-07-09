@@ -10,7 +10,6 @@ const LeftSideBar = (props) => {
     <Box
       width={300}
       display="flex"
-      alignItems="center"
       flexDirection="column"
       gap={2}
       noValidate
